@@ -1,4 +1,4 @@
-//ヒノアラシの性格・属性・選択された情報
+//ヒノアラシの性格・属性・選択された情報のプログラム
 class Hinorashi {
   final int id;
   final String imageAsset;
