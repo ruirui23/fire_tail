@@ -4,8 +4,8 @@ class Hinorashi {
   final String imageAsset;
   const Hinorashi(this.id, this.imageAsset);
   static const options = [
-    Hinorashi(0, 'assets/images/hinoarashi1.jpg'),
-    Hinorashi(1, 'assets/images/hinoarashi2.jpg'),
-    Hinorashi(2, 'assets/images/tyebu.png'),
+    Hinorashi(0, 'assets/images/red.png'),
+    Hinorashi(1, 'assets/images/blue.png'),
+    Hinorashi(2, 'assets/images/purple.png'),
   ];
 }

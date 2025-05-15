@@ -1,25 +1,43 @@
-//障害物の位置や衝突判定、動きの処理プログラム
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
+import 'package:flutter/foundation.dart'; // debugPrint 用
 
 class Obstacle extends SpriteComponent
     with CollisionCallbacks, HasGameRef {
-  static const v = 240.0;
+  static const double speed = 240.0;
 
   @override
   Future<void> onLoad() async {
-    sprite = await Sprite.load('/tyebuo.png');
-    size   = Vector2(40, 40);
+    // ── スプライト読み込み ──────────────────────────────
+    try {
+      sprite = await Sprite.load('rock.png');
+      debugPrint('✅ Obstacle sprite loaded');
+    } catch (e) {
+      debugPrint('❌ Failed to load rock.png: $e');
+
+    }
+
+    size = Vector2(50*4, 50*4); // スプライトのサイズを指定
     anchor = Anchor.bottomLeft;
-    y      = gameRef.size.y - 10;
-    x      = gameRef.size.x + width;
     add(RectangleHitbox());
+  }
+
+  @override
+  void onGameResize(Vector2 canvasSize) {
+    super.onGameResize(canvasSize);
+    // 画面右端の外側、地面 y=canvasSize.y−10 に初期配置
+    position = Vector2(canvasSize.x + size.x, canvasSize.y - 10);
   }
 
   @override
   void update(double dt) {
     super.update(dt);
-    x -= v * dt;
-    if (x < -width) removeFromParent();
+    // 左へ流れる
+    x -= speed * dt;
+    // 画面外に出たら削除
+    if (x < -width) {
+      removeFromParent();
+      // （必要なら回避カウントなどの通知をここで）
+    }
   }
 }

@@ -4,8 +4,8 @@ import 'package:flame/collisions.dart';
 import 'package:flutter/foundation.dart'; // debugPrint 用
 import 'dart:ui';                        // Paint 用
 
-import 'obstacle.dart';
 import 'adventure_game.dart';
+import 'obstacle.dart'; // 追加: Obstacleクラスをインポート
 
 class Player extends SpriteComponent
     with CollisionCallbacks, HasGameRef<AdventureGame> {
@@ -13,8 +13,8 @@ class Player extends SpriteComponent
   final String assetPath;
 
   // ── 物理定数 ──────────────────────────────────────────
-  static const g = 900.0;      // 重力加速度
-  static const jumpV = -360.0; // ジャンプ初速
+  static const g = 1500.0;      // 重力加速度
+  static const jumpV = -720.0; // ジャンプ初速
 
   double vy = 0;               // 現在の鉛直速度
   late double ground;          // 地面 y 座標
@@ -32,7 +32,7 @@ class Player extends SpriteComponent
       paint = Paint()..color = const Color(0xFF2196F3); // 青四角で代用
     }
 
-    size   = Vector2(48, 48);
+    size   = Vector2(48*7, 48*7);
     anchor = Anchor.bottomCenter;
   }
 
@@ -42,10 +42,10 @@ class Player extends SpriteComponent
     super.onGameResize(canvasSize);
 
     // 地面をキャンバス下端ギリギリに再計算
-    ground = canvasSize.y - 10;
+    ground = canvasSize.y -5;
 
     // 初期配置もここで決めると確実
-    position = Vector2(canvasSize.x / 4, ground);
+    position = Vector2(canvasSize.x * 0.10, ground);
 
     // もしリサイズでプレイヤーがめり込んだら補正
     if (y > ground) y = ground;
@@ -80,6 +80,7 @@ class Player extends SpriteComponent
   void onCollisionStart(
       Set<Vector2> intersectionPoints, PositionComponent other) {
     if (other is Obstacle) {
+        gameRef.incrementCollision();          // ← ここでカウントアップ
       debugPrint('💥 Player hit obstacle');
       gameRef.pauseEngine();
       gameRef.onFinish();
