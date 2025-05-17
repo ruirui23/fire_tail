@@ -1,9 +1,12 @@
+// lib/flame/adventure_game.dart
+
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'dart:ui'; // Color 用
+
 import 'player.dart';
 import 'obstacle.dart';
-import 'dart:ui'; // Color 用
 
 class AdventureGame extends FlameGame
     with TapCallbacks, HasCollisionDetection {
@@ -17,39 +20,62 @@ class AdventureGame extends FlameGame
   final VoidCallback onFinish;
   final bool startPaused;
 
-int collisionCount = 0;
-int spawnCount = 0;
-  // 衝突数を取得
-  void incrementCollision() {
-    collisionCount++;
-  }
+  /// 衝突カウント
+  int collisionCount = 0;
+
+  /// 生成済みの障害物カウント（最大10個まで）
+  int spawnCount = 0;
+
+  /// 背景コンポーネント（nullable にして初期化前アクセスを防ぐ）
+  SpriteComponent? _background;
+
   late Player _player;
-  double _timeLeft = 15; // ゲーム時間
+  double _timeLeft = 15;      
   double _spawn     = 0;
-  static const _interval = 1.2;
+  static const double _interval = 1.2;
 
   @override
   Color backgroundColor() => const Color(0xFFB3E5FC);
 
   @override
   Future<void> onLoad() async {
-    // プレイヤーだけ先に追加し…
+    // 1) 背景を最背面に貼る（ダミーサイズで初期化）
+    _background = SpriteComponent()
+      ..sprite = await Sprite.load('syo.png')
+      ..position = Vector2.zero()
+      ..size = Vector2(100, 100)  // あとで onGameResize で画面全体に
+      ..anchor = Anchor.topLeft;
+    add(_background!);
+
+    // 2) プレイヤーを追加
     _player = Player(assetPath: _pathForId(chosenId));
     add(_player);
-    // セリフ中はゲームを止める
+
+    // セリフシーン中は止める
     if (startPaused) {
       pauseEngine();
     }
   }
 
   @override
+  void onGameResize(Vector2 canvasSize) {
+    super.onGameResize(canvasSize);
+    // 背景があれば画面サイズいっぱいに伸ばす
+    if (_background != null) {
+      _background!
+        ..size = canvasSize;
+    }
+  }
+
+  @override
   void update(double dt) {
-    // セリフ表示中は何もしない
+    // セリフシーン中は何もしない
     if (paused) {
       return;
     }
     super.update(dt);
-    // タイマー処理
+
+    // タイマー
     _timeLeft -= dt;
     if (_timeLeft <= 0) {
       pauseEngine();
@@ -57,9 +83,9 @@ int spawnCount = 0;
       return;
     }
 
-    // 障害物生成
+    // 障害物生成（最大10個）
     _spawn += dt;
-      if (_spawn >= _interval && spawnCount < 10) {
+    if (_spawn >= _interval && spawnCount < 10) {
       _spawn = 0;
       add(Obstacle());
       spawnCount++;
