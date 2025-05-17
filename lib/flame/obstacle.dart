@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart'; // debugPrint 用
 
 class Obstacle extends SpriteComponent
     with CollisionCallbacks, HasGameRef {
-  static const double speed = 240.0;
+  static const double speed = 800.0;
 
   @override
   Future<void> onLoad() async {
@@ -17,7 +17,7 @@ class Obstacle extends SpriteComponent
 
     }
 
-    size = Vector2(50*4, 50*4); // スプライトのサイズを指定
+    size = Vector2(50*5, 50*5); // スプライトのサイズを指定
     anchor = Anchor.bottomLeft;
     add(RectangleHitbox());
   }
@@ -25,8 +25,8 @@ class Obstacle extends SpriteComponent
   @override
   void onGameResize(Vector2 canvasSize) {
     super.onGameResize(canvasSize);
-    // 画面右端の外側、地面 y=canvasSize.y−10 に初期配置
-    position = Vector2(canvasSize.x + size.x, canvasSize.y - 10);
+    // 画面右端の外側、地面 y=canvasSizeに初期配置
+    position = Vector2(canvasSize.x + size.x, canvasSize.y  );
   }
 
   @override

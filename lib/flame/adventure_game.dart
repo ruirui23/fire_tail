@@ -22,7 +22,7 @@ int collisionCount = 0;
     collisionCount++;
   }
   late Player _player;
-  double _timeLeft = 10;
+  double _timeLeft = 10; // ゲーム時間
   double _spawn     = 0;
   static const _interval = 1.2;
 
