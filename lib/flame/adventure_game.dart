@@ -18,11 +18,13 @@ class AdventureGame extends FlameGame
   final bool startPaused;
 
 int collisionCount = 0;
+int spawnCount = 0;
+  // 衝突数を取得
   void incrementCollision() {
     collisionCount++;
   }
   late Player _player;
-  double _timeLeft = 10; // ゲーム時間
+  double _timeLeft = 15; // ゲーム時間
   double _spawn     = 0;
   static const _interval = 1.2;
 
@@ -57,9 +59,10 @@ int collisionCount = 0;
 
     // 障害物生成
     _spawn += dt;
-    if (_spawn >= _interval) {
+      if (_spawn >= _interval && spawnCount < 10) {
       _spawn = 0;
       add(Obstacle());
+      spawnCount++;
     }
   }
 
