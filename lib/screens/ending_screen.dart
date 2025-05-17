@@ -1,4 +1,4 @@
-// lib/screens/ending_screen.dart
+//最後のセリフ表示の結の画面
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

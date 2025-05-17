@@ -79,10 +79,16 @@ class Player extends SpriteComponent
   @override
   void onCollisionStart(
       Set<Vector2> intersectionPoints, PositionComponent other) {
+         // すでに一時停止中なら何もしない（２度目以降はここで弾く）
+    if (gameRef.paused) {
+      return;
+    }
     if (other is Obstacle) {
       // ここで直接 collisionCount フィールドをインクリメント
       gameRef.collisionCount++;
       debugPrint('💥 Player hit obstacle (count=${gameRef.collisionCount})');
+ // この障害物は消しておく
+      other.removeFromParent();
 
     
     }
