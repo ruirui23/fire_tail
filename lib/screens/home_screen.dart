@@ -243,32 +243,71 @@ class _HomeScreenState extends State<HomeScreen> {
                     fit: BoxFit.contain,
                   ),
                 ),
-                const SizedBox(height: 24),
-                // ノーマル／ハード の切り替え
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ChoiceChip(
-                      label: const Text('ノーマルモード'),
-                      selected: _mode == GameMode.normal,
-                      onSelected: (_) {
-                        setState(() => _mode = GameMode.normal);
-                      },
-                    ),
-                    const SizedBox(width: 16),
-                    ChoiceChip(
-                      label: const Text('ハードモード'),
-                      selected: _mode == GameMode.hard,
-                      onSelected: (_) {
-                        setState(() => _mode = GameMode.hard);
-                      },
-                    ),
-                  ],
+                const SizedBox(height: 60),
+               // ノーマル／ハード の切り替えボタン
+                 Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 『ノーマル』を幅 100 で固定
+                  SizedBox(
+                    width: 100,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _mode == GameMode.normal
+                                ? Colors.deepOrange
+                                : Colors.grey[300],
+                            foregroundColor: _mode == GameMode.normal
+                                ? Colors.white
+                                : Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            minimumSize: const Size(10,15),
+                          ),
+                          onPressed: () {
+                            setState(() => _mode = GameMode.normal);
+                          },
+                          child: const Text(
+                            'ノーマル',
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // ハードモード
+                       Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 『ノーマル』を幅 100 で固定
+                  SizedBox(
+                    width: 100, 
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _mode == GameMode.hard
+                                ? Colors.redAccent
+                                : Colors.grey[300],
+                            foregroundColor: _mode == GameMode.hard
+                                ? Colors.white
+                                : Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            minimumSize: const Size(10, 15),
+                          ),
+                          onPressed: () {
+                            setState(() => _mode = GameMode.hard);
+                          },
+                          child: const Text(
+                            'ハード',
+                            style: TextStyle(fontSize: 20),
+                           ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 ),
               ],
             ),
           ),
-
         ],
       ),
     );
