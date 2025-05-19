@@ -7,10 +7,17 @@ import 'package:provider/provider.dart';
 
 import '../flame/adventure_game.dart';
 import '../models/result.dart';
+import '../models/game_mode.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key, required this.chosenId});
-  final int chosenId; // 0,1,2
+final int chosenId; // 0,1,2
+final GameMode mode;
+
+const GameScreen({
+  Key? key,
+  required this.chosenId,
+  required this.mode,               // ← 追加
+}) : super(key: key);
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -33,6 +40,7 @@ class _GameScreenState extends State<GameScreen> {
     super.initState();
     _game = AdventureGame(
       chosenId: widget.chosenId,
+      mode: widget.mode,            // ← 追加
       startPaused: true,
       onFinish: () {
         // 衝突数を保存
