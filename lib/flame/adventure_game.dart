@@ -1,11 +1,12 @@
 // lib/flame/adventure_game.dart
 
+import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'dart:ui'; // Color 用
 
-import '../models/game_mode.dart';  // 追加
+import '../models/game_mode.dart';
 import 'player.dart';
 import 'obstacle.dart';
 
@@ -13,57 +14,66 @@ class AdventureGame extends FlameGame
     with TapCallbacks, HasCollisionDetection {
   AdventureGame({
     required this.chosenId,
-    required this.mode,          // 追加
+    required this.mode,
     required this.onFinish,
     this.startPaused = false,
   });
 
   final int chosenId;
-  final GameMode mode;           // 追加
+  final GameMode mode;
   final VoidCallback onFinish;
   final bool startPaused;
 
   /// 衝突カウント
   int collisionCount = 0;
-
   /// 生成済みの障害物カウント（最大10個まで）
   int spawnCount = 0;
-
-  /// 背景コンポーネント（nullable にして初期化前アクセスを防ぐ）
+  /// 背景コンポーネント
   SpriteComponent? _background;
-
   late Player _player;
-  late double _timeLeft;         // モード別に設定
-  double _spawn = 0;
-  late double _interval;         // モード別に設定
+
+  /// タイマー (秒)
+  late double _timeLeft;
+
+  /// カレントの生成間隔
+  late double _currentInterval;
+  /// ランダム生成用の上下限
+  late final double _intervalMin;
+  late final double _intervalMax;
+
+  double _spawnTimer = 0;
+  final _rng = Random();
 
   @override
   Color backgroundColor() => const Color(0xFFB3E5FC);
 
   @override
   Future<void> onLoad() async {
-    // ▼ モードごとの時間と生成間隔を設定
+    // ────────── モードごとの設定 ──────────
     if (mode == GameMode.normal) {
-      _timeLeft = 20.0;       // ノーマル 20秒
-      _interval = 1.2;        // 障害物間隔：1.2秒
+      _timeLeft = 15.0;
+      _intervalMin = _intervalMax = 1.2; // 固定1.2秒
     } else {
-      _timeLeft = 15.0;       // ハード 15秒
-      _interval = 0.8;        // 障害物間隔：0.8秒
+      _timeLeft = 16.0;
+      _intervalMin = 1.0;    // 最低1.0秒
+      _intervalMax = 1.6;    // 上限はお好みで調整（ここでは1.6秒に設定）
     }
+    // 最初の間隔を設定
+    _currentInterval = _intervalMax;
 
-    // 1) 背景を最背面に貼る（ダミーサイズで初期化）
+    // ────────── 背景 ──────────
     _background = SpriteComponent()
       ..sprite = await Sprite.load('syo.png')
       ..position = Vector2.zero()
-      ..size = Vector2(100, 100)  // あとで onGameResize で画面全体に
+      ..size = Vector2(100, 100)  // 後で onGameResize で拡大
       ..anchor = Anchor.topLeft;
     add(_background!);
 
-    // 2) プレイヤーを追加
+    // ────────── プレイヤー ──────────
     _player = Player(assetPath: _pathForId(chosenId));
     add(_player);
 
-    // セリフシーン中は止める
+    // セリフシーン中はストップ
     if (startPaused) {
       pauseEngine();
     }
@@ -72,7 +82,7 @@ class AdventureGame extends FlameGame
   @override
   void onGameResize(Vector2 canvasSize) {
     super.onGameResize(canvasSize);
-    // 背景があれば画面サイズいっぱいに伸ばす
+    // 背景を画面いっぱいに
     _background?..size = canvasSize;
   }
 
@@ -90,12 +100,20 @@ class AdventureGame extends FlameGame
       return;
     }
 
-    // 障害物生成（最大10個）
-    _spawn += dt;
-    if (_spawn >= _interval && spawnCount < 10) {
-      _spawn = 0;
+    // 障害物生成
+    _spawnTimer += dt;
+    if (_spawnTimer >= _currentInterval && spawnCount < 10) {
+      _spawnTimer = 0;
       add(Obstacle());
       spawnCount++;
+
+      // 次の間隔を決定
+      if (mode == GameMode.hard) {
+        _currentInterval =
+            _intervalMin + _rng.nextDouble() * (_intervalMax - _intervalMin);
+      } else {
+        _currentInterval = _intervalMax; // ノーマルは毎回1.2秒
+      }
     }
   }
 
