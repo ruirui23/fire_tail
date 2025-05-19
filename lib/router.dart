@@ -1,10 +1,12 @@
-//各画面のURLパスの定義や画面遷移の設定のプログラム
+// lib/router.dart
+
 import 'package:go_router/go_router.dart';
-import 'screens/home_screen.dart';      
+import 'screens/home_screen.dart';
 import 'screens/choose_screen.dart';
 import 'screens/game_screen.dart';
 import 'screens/quiz_screen.dart';
 import 'screens/ending_screen.dart';
+import 'models/game_mode.dart';
 
 final appRouter = GoRouter(
   routes: [
@@ -14,23 +16,36 @@ final appRouter = GoRouter(
       builder: (_, __) => const HomeScreen(),
     ),
 
-    // 起（ヒノアラシ選択）
+    // 起（ヒノアラシ選択） ─ extra に GameMode を渡す
     GoRoute(
       path: '/choose',
-      builder: (_, __) => const ChooseScreen(),
-    ),
-
-    // 承（ゲーム） ─ extra に選択 ID を渡す
-    GoRoute(
-      path: '/game',
       builder: (_, state) {
-        final id = state.extra as int? ?? 0;
-        return GameScreen(chosenId: id);
+        final mode = state.extra as GameMode? ?? GameMode.normal;
+        return ChooseScreen(mode: mode);
       },
     ),
 
-    GoRoute(path: '/quiz',   builder: (_, __) => const QuizScreen()),
-    GoRoute(path: '/ending', builder: (_, __) => const EndingScreen()),
+    // 承（ゲーム） ─ extra に {'mode': GameMode, 'id': int} を渡す
+    GoRoute(
+      path: '/game',
+      builder: (_, state) {
+        final args = state.extra as Map<String, dynamic>? ?? {};
+        final mode = args['mode'] as GameMode? ?? GameMode.normal;
+        final id = args['id'] as int? ?? 0;
+        return GameScreen(chosenId: id, mode: mode);
+      },
+    ),
+
+    // 転（クイズ）
+    GoRoute(
+      path: '/quiz',
+      builder: (_, __) => const QuizScreen(),
+    ),
+
+    // 結（エンディング）
+    GoRoute(
+      path: '/ending',
+      builder: (_, __) => const EndingScreen(),
+    ),
   ],
 );
-

@@ -5,10 +5,12 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
 import '../models/hinoarashi.dart';
+import '../models/game_mode.dart';
 import '../models/result.dart';
 
 class ChooseScreen extends StatefulWidget {
-  const ChooseScreen({Key? key}) : super(key: key);
+  final GameMode mode;
+  const ChooseScreen({Key? key, required this.mode}) : super(key: key);
 
   @override
   State<ChooseScreen> createState() => _ChooseScreenState();
@@ -18,7 +20,14 @@ class _ChooseScreenState extends State<ChooseScreen> {
   int _step = 0;
   final List<int> _answers = [-1, -1, -1];
 
- 
+  // 最終セリフ
+  final List<String> _finalLines = [
+    'この子が君の相棒じゃ！',
+    '（あ…自分で選べるとかじゃないんだ。使えるヒノアラシだといいけど…）',
+    '主「ありがとうございます！じゃ早速行ってきます！」',
+    'は「うむ！気をつけるんじゃぞ」',
+  ];
+  int _revealIdx = 0;
 
   // 質問データ
   final List<Map<String, dynamic>> _questions = [
@@ -45,7 +54,7 @@ class _ChooseScreenState extends State<ChooseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ■ ステップ0：オープニング（画面全体タップで進む）
+    // ステップ0：オープニング（画面全体タップで進む）
     if (_step == 0) {
       return Scaffold(
         body: GestureDetector(
@@ -65,10 +74,10 @@ class _ChooseScreenState extends State<ChooseScreen> {
     Widget content;
 
     if (_step <= _questions.length * 2) {
-      // ■ 質問フェーズ
+      // 質問フェーズ
       final qIdx = (_step - 1) ~/ 2;
       if (_step.isOdd) {
-        // 質問文＋選択肢ボタン
+        // 質問文＋選択肢
         final q = _questions[qIdx];
         content = Column(
           mainAxisSize: MainAxisSize.min,
@@ -91,23 +100,20 @@ class _ChooseScreenState extends State<ChooseScreen> {
         final label = ['A', 'B', 'C'][choice];
         content = _dialogueBox('主「$label！」', onTap: _next);
       }
-    }
-    else if (_step == _questions.length * 2 + 1) {
-      // ■ 待機メッセージ
+    } else if (_step == _questions.length * 2 + 1) {
+      // 待機メッセージ
       content = _dialogueBox(
         'うむ！では君の旅の相棒を連れてくるから少し待っていておくれ',
         onTap: _next,
       );
-    }
-    else if (_step == _questions.length * 2 + 2) {
-      // ■ ドン演出
+    } else if (_step == _questions.length * 2 + 2) {
+      // ドン演出
       content = _dialogueBox('…ドン！！', onTap: _next);
-    }
-    else if (_step >= revealStart) {
-      // ■ 相棒発表フェーズ
+    } else if (_step >= revealStart) {
+      // 相棒発表フェーズ
       final chosenId = _answers.last;
       if (_revealIdx == 0) {
-        // 最初に相棒を保存
+        // 最初に相棒IDを保存
         Provider.of<Result>(context, listen: false).setChosen(chosenId);
       }
       final line = _finalLines[_revealIdx];
@@ -118,23 +124,26 @@ class _ChooseScreenState extends State<ChooseScreen> {
             setState(() {
               _revealIdx++;
               if (_revealIdx >= _finalLines.length) {
-                // 全セリフ終わり → ゲーム画面へ
-                context.go('/game', extra: chosenId);
+                // 全セリフ終わり → 次画面へモード＋IDを渡す
+                context.go(
+                  '/game',
+                  extra: {'mode': widget.mode, 'id': chosenId},
+                );
               }
             });
           }),
+          // 相棒発表時だけ画像を表示
           if (_revealIdx == 0) ...[
             const SizedBox(height: 16),
             Image.asset(
               Hinorashi.options[chosenId].assetPath,
-              width: 400,
-              height: 400,
+              width: 200,
+              height: 200,
             ),
           ],
         ],
       );
-    }
-    else {
+    } else {
       content = const SizedBox.shrink();
     }
 
@@ -156,18 +165,14 @@ class _ChooseScreenState extends State<ChooseScreen> {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
       ),
-      child: Text(text, style: const TextStyle(fontSize: 18), textAlign: TextAlign.center),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 18),
+        textAlign: TextAlign.center,
+      ),
     );
     return onTap != null
         ? GestureDetector(onTap: onTap, child: box)
         : box;
   }
 }
- // 最終セリフ
-  final List<String> _finalLines = [
-    'この子が君の相棒じゃ！',
-    '（あ…自分で選べるとかじゃないんだ。使えるヒノアラシだといいけど…）',
-    '主「ありがとうございます！じゃ早速行ってきます！」',
-    'は「うむ！気をつけるんじゃぞ」',
-  ];
-  int _revealIdx = 0;

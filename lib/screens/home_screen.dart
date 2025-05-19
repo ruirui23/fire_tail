@@ -2,10 +2,38 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../models/game_mode.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
 
+class _HomeScreenState extends State<HomeScreen> {
+  // デフォルトはノーマルモード
+  GameMode _mode = GameMode.normal;
+
+  void _showFullStory(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('FireTail ストーリー'),
+        content: SingleChildScrollView(
+          child: Text(
+            _fullStory,
+            style: const TextStyle(fontSize: 16),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('閉じる'),
+          ),
+        ],
+      ),
+    );
+  }
   // ─── 全文ストーリー ─────────────────────────────
   static const String _fullStory = '''
 コンコン（ドアを叩く音）
@@ -182,24 +210,12 @@ class HomeScreen extends StatelessWidget {
 知らなければどれだけ楽だったのだろう
 〜シークレットエンド（復讐）〜
 ''';
-
-  @override
+@override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // 中央に START 画像タップ領域
-          Center(
-            child: GestureDetector(
-              onTap: () => context.go('/choose'),
-              child: Image.asset(
-                'assets/images/start.png',
-                width: 300,
-                height: 300,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
+
           // 右上に「ストーリー」ボタン
           Positioned(
             top: 16,
@@ -209,26 +225,88 @@ class HomeScreen extends StatelessWidget {
               child: const Text('ストーリー'),
             ),
           ),
-        ],
-      ),
-    );
-  }
 
-  void _showFullStory(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('FireTail ストーリー'),
-        content: SingleChildScrollView(
-          child: Text(
-            _fullStory,
-            style: const TextStyle(fontSize: 16),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('閉じる'),
+          // 中央に START 画像タップ領域 ＋ モード選択
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    // /choose ルートにモードを extra で渡す
+                    context.go('/choose', extra: _mode);
+                  },
+                  child: Image.asset(
+                    'assets/images/start.png',
+                    width: 300,
+                    height: 300,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                const SizedBox(height: 60),
+               // ノーマル／ハード の切り替えボタン
+                 Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 『ノーマル』を幅 100 で固定
+                  SizedBox(
+                    width: 100,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _mode == GameMode.normal
+                                ? Colors.deepOrange
+                                : Colors.grey[300],
+                            foregroundColor: _mode == GameMode.normal
+                                ? Colors.white
+                                : Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            minimumSize: const Size(10,15),
+                          ),
+                          onPressed: () {
+                            setState(() => _mode = GameMode.normal);
+                          },
+                          child: const Text(
+                            'ノーマル',
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // ハードモード
+                       Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 『ノーマル』を幅 100 で固定
+                  SizedBox(
+                    width: 100, 
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _mode == GameMode.hard
+                                ? Colors.redAccent
+                                : Colors.grey[300],
+                            foregroundColor: _mode == GameMode.hard
+                                ? Colors.white
+                                : Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            minimumSize: const Size(10, 15),
+                          ),
+                          onPressed: () {
+                            setState(() => _mode = GameMode.hard);
+                          },
+                          child: const Text(
+                            'ハード',
+                            style: TextStyle(fontSize: 20),
+                           ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                ),
+              ],
+            ),
           ),
         ],
       ),

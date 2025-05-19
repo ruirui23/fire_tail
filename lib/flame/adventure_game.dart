@@ -5,6 +5,7 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'dart:ui'; // Color 用
 
+import '../models/game_mode.dart';  // 追加
 import 'player.dart';
 import 'obstacle.dart';
 
@@ -12,11 +13,13 @@ class AdventureGame extends FlameGame
     with TapCallbacks, HasCollisionDetection {
   AdventureGame({
     required this.chosenId,
+    required this.mode,          // 追加
     required this.onFinish,
     this.startPaused = false,
   });
 
   final int chosenId;
+  final GameMode mode;           // 追加
   final VoidCallback onFinish;
   final bool startPaused;
 
@@ -30,15 +33,24 @@ class AdventureGame extends FlameGame
   SpriteComponent? _background;
 
   late Player _player;
-  double _timeLeft = 15;      
-  double _spawn     = 0;
-  static const double _interval = 1.2;
+  late double _timeLeft;         // モード別に設定
+  double _spawn = 0;
+  late double _interval;         // モード別に設定
 
   @override
   Color backgroundColor() => const Color(0xFFB3E5FC);
 
   @override
   Future<void> onLoad() async {
+    // ▼ モードごとの時間と生成間隔を設定
+    if (mode == GameMode.normal) {
+      _timeLeft = 20.0;       // ノーマル 20秒
+      _interval = 1.2;        // 障害物間隔：1.2秒
+    } else {
+      _timeLeft = 15.0;       // ハード 15秒
+      _interval = 0.8;        // 障害物間隔：0.8秒
+    }
+
     // 1) 背景を最背面に貼る（ダミーサイズで初期化）
     _background = SpriteComponent()
       ..sprite = await Sprite.load('syo.png')
@@ -61,18 +73,13 @@ class AdventureGame extends FlameGame
   void onGameResize(Vector2 canvasSize) {
     super.onGameResize(canvasSize);
     // 背景があれば画面サイズいっぱいに伸ばす
-    if (_background != null) {
-      _background!
-        ..size = canvasSize;
-    }
+    _background?..size = canvasSize;
   }
 
   @override
   void update(double dt) {
     // セリフシーン中は何もしない
-    if (paused) {
-      return;
-    }
+    if (paused) return;
     super.update(dt);
 
     // タイマー
