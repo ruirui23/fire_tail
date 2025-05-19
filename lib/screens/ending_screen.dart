@@ -1,26 +1,93 @@
-//最後のセリフ表示の結の画面
+// 結の画面を作成する
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/result.dart';
 import 'package:go_router/go_router.dart';
 
-class EndingScreen extends StatelessWidget {
+class EndingScreen extends StatefulWidget {
   const EndingScreen({super.key});
+
+  @override
+  State<EndingScreen> createState() => _EndingScreenState();
+}
+
+class _EndingScreenState extends State<EndingScreen> {
+  late final List<String> _lines;
+  int _index = 0;
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final r = context.read<Result>();
+      final avoided = 10 - r.collisions;
+      final qc = r.quizCorrect;
+
+      if (r.collisions == 0 && qc == 5) {
+        // 進化
+        _lines = [
+          '主「？！、なんで急に姿が変わったんだ？とりあえず勝ちは勝ちだ、家に帰れるぞ！」',
+          '（姿の変わってしまった相棒と帰路に着いた）',
+        ];
+      } else if (avoided >= 1 && avoided <= 9 && qc >= 3) {
+        // 勝ち
+        _lines = [
+          '主「よし！何とか倒したぞ…これで村に帰れる！」',
+          '（大切な相棒と軽い足取りで帰路に着いた）',
+        ];
+      } else {
+        // 負け
+        _lines = [
+          '主「くそっ…なんでだよ！これじゃ村に帰れないじゃないかっ…とりあえず村に報告しに行くかないと」',
+          '（ボロボロのヒノアラシに冷たい視線を送り帰路に着いた）',
+        ];
+      }
+
+      _initialized = true;
+    }
+  }
+
+  void _nextLine() {
+    setState(() {
+      _index++;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final r = context.watch<Result>();
 
-    String ending;
-    if (r.quizCorrect >= 4 && r.collisions == 0) {
-      ending = 'GOOD END\nヒノアラシは大冒険を成し遂げた！';
-    } else if (r.quizCorrect >= 2) {
-      ending = 'NORMAL END\nヒノアラシは冒険を続ける！';
-    } else {
-      ending = 'BAD END\n弱いヒノアラシなんていらない…';
+    // セリフが残っている間はオーバーレイ表示
+    if (_index < _lines.length) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _nextLine,
+          child: Container(
+            color: Colors.black.withOpacity(0.6),
+            alignment: Alignment.center,
+            padding: const EdgeInsets.all(24),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                _lines[_index],
+                style: const TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
+    // セリフが終わったらスコアカード＋リプレイボタン
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(title: const Text('エンドロール')),
@@ -32,14 +99,13 @@ class EndingScreen extends StatelessWidget {
             children: [
               // エンディングタイトル
               Text(
-                ending,
-                textAlign: TextAlign.center,
+                // 選択肢としても兼用できますが、今回は結果文はセリフで終えているので
+                '', // 空文字にしてタイトルは省略
                 style: Theme.of(context)
                     .textTheme
                     .headlineSmall
                     ?.copyWith(color: Colors.deepOrange),
               ),
-              const SizedBox(height: 32),
 
               // スコアカード
               Card(
@@ -56,48 +122,34 @@ class EndingScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'クイズ正解数',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              Text(
-                                '${r.quizCorrect} / 5',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineMedium
-                                    ?.copyWith(color: Colors.blue),
-                              ),
-                            ],
+                          Text(
+                            'クイズ正解数: ',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          Text(
+                            '${r.quizCorrect} / 5',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(color: Colors.blue),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-
-                      // よけた障害物数
+                      const SizedBox(height: 16),
+                      // 当たった障害物数
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.shield, size: 32, color: Colors.red),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '当たった障害物',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              Text(
-                                '${r.collisions} / 10',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineMedium
-                                    ?.copyWith(color: Colors.red),
-                              ),
-                            ],
+                          Text(
+                            '当たった障害物: ',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          Text(
+                            '${r.collisions} / 10',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(color: Colors.red),
                           ),
                         ],
                       ),
@@ -107,6 +159,8 @@ class EndingScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 32),
+
+              // もう一度遊ぶボタン
               ElevatedButton.icon(
                 onPressed: () => context.go('/'),
                 icon: const Icon(Icons.replay),
