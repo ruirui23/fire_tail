@@ -1,4 +1,4 @@
-// lib/flame/adventure_game.dart
+// 障害物をよけるゲームを
 
 import 'dart:math';
 import 'package:flame/components.dart';
@@ -51,12 +51,12 @@ class AdventureGame extends FlameGame
   Future<void> onLoad() async {
     // ────────── モードごとの設定 ──────────
     if (mode == GameMode.normal) {
-      _timeLeft = 15.0;
-      _intervalMin = _intervalMax = 1.2; // 固定1.2秒
+      _timeLeft = 16.0;
+      _intervalMin = _intervalMax = 1.3; // 固定1.2秒
     } else {
       _timeLeft = 16.0;
-      _intervalMin = 1.0;    // 最低1.0秒
-      _intervalMax = 1.6;    // 上限はお好みで調整（ここでは1.6秒に設定）
+      _intervalMin = 0.9;    // 最低1.0秒
+      _intervalMax = 1.4;    // 上限はお好みで調整（ここでは1.5秒に設定）
     }
     // 最初の間隔を設定
     _currentInterval = _intervalMax;
