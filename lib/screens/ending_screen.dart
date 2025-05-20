@@ -25,7 +25,10 @@ class _EndingScreenState extends State<EndingScreen> {
       final avoided = 10 - r.collisions;
       final qc = r.quizCorrect;
 
-      if (r.collisions == 0 && qc == 5) {
+      // chosenIDをResultモデルから取得する場合（例: r.chosenID）
+      final chosenID = r.chosenId;
+
+      if (r.collisions == 0 && qc == 5 && chosenID == 2) {
         // 進化
         _lines = [
           '主「？！、なんで急に姿が変わったんだ？とりあえず勝ちは勝ちだ、家に帰れるぞ！」',
