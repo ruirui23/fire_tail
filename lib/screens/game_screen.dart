@@ -1,5 +1,3 @@
-// lib/screens/game_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:go_router/go_router.dart';
@@ -27,7 +25,7 @@ class _GameScreenState extends State<GameScreen> {
   late final AdventureGame _game;
 
   // ── 冒頭セリフ ───────────────────────────────────────
-  late final List<String> _dialogue = _lines[widget.chosenId]!;
+  late List<String> _dialogue;
   int _index = 0;
 
   // ── 結果セリフ用 ───────────────────────────────────────
@@ -38,14 +36,18 @@ class _GameScreenState extends State<GameScreen> {
   @override
   void initState() {
     super.initState();
+    final name = context.read<Result>().playerName;
+    _dialogue =
+        _lines[widget.chosenId]!.map((s) => s.replaceAll('主', name)).toList();
+
     _game = AdventureGame(
       chosenId: widget.chosenId,
-      mode: widget.mode,       // ← 難易度を渡す
+      mode: widget.mode,
       startPaused: true,
       onFinish: () {
         // 衝突数を保存
         context.read<Result>().setCollisions(_game.collisionCount);
-        // 結果セリフパターンを決定
+        // 結果セリフパターンを決定して置換
         final c = _game.collisionCount;
         if (c == 0) {
           _resultDialogue = _endingsNoMiss;
@@ -54,10 +56,14 @@ class _GameScreenState extends State<GameScreen> {
         } else {
           _resultDialogue = _endingsNormal;
         }
+        final name = context.read<Result>().playerName;
+        _resultDialogue =
+            _resultDialogue.map((s) => s.replaceAll('主', name)).toList();
+
         // セリフオーバーレイを表示
         setState(() {
           _showResult = true;
-          _resIndex   = 0;
+          _resIndex = 0;
         });
       },
     );

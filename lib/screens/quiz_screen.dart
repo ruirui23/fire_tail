@@ -1,5 +1,3 @@
-// lib/screens/quiz_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -45,11 +43,11 @@ class _QuizScreenState extends State<QuizScreen> {
     } else {
       // ハード：5択５問
       _qs = [
-        (_Question('ほのおタイプの弱点は？'), ['こおり', 'エスパー', 'いわ', 'でんき','あく'],2),
-        (_Question('ヒノアラシの全国図鑑番号は？'), ['154','155', '156', '157', '158'], 1),
-        (_Question('ヒノアラシの第２進化はどれ？'), ['バクフーン', 'マグマラシ','カエンジシ', 'テッポウオ', 'ホルビー'], 0),
-        (_Question('マグマラシの英語名はどれ？'), ['Cyndaquil','Typhlosion', 'volcano', 'Magmar', 'Quilava'], 4),
-        (_Question('マグマラシの分類名称「○○ポケモン」は？'), ['ひねずみ','まぐまねずみ', 'マグマ', 'かざん', 'かえん'], 3),
+        (_Question('ほのおタイプの弱点は？'), ['こおり', 'エスパー', 'いわ', 'でんき', 'あく'], 2),
+        (_Question('ヒノアラシの全国図鑑番号は？'), ['154', '155', '156', '157', '158'], 1),
+        (_Question('ヒノアラシの第２進化はどれ？'), ['バクフーン', 'マグマラシ', 'カエンジシ', 'テッポウオ', 'ホルビー'], 0),
+        (_Question('マグマラシの英語名はどれ？'), ['Cyndaquil', 'Typhlosion', 'volcano', 'Magmar', 'Quilava'], 4),
+        (_Question('マグマラシの分類名称「○○ポケモン」は？'), ['ひねずみ', 'まぐまねずみ', 'マグマ', 'かざん', 'かえん'], 3),
       ];
     }
   }
@@ -77,6 +75,7 @@ class _QuizScreenState extends State<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final playerName = context.watch<Result>().playerName;
     final total = _qs.length;
     final current = _idx + 1;
     final question = _qs[_idx];
@@ -103,7 +102,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 children: [
                   _QuestionText(text: question.$1.text),
                   const SizedBox(height: 40),
-                  // モードに応じた選択肢数 (3 or 4)
+                  // 選択肢
                   for (int i = 0; i < question.$2.length; i++) ...[
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -149,7 +148,7 @@ class _QuizScreenState extends State<QuizScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    _introLines[_introIndex],
+                    _introLines[_introIndex].replaceAll('主', playerName),
                     style: const TextStyle(fontSize: 18),
                     textAlign: TextAlign.center,
                   ),

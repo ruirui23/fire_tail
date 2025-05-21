@@ -1,5 +1,3 @@
-// 結の画面を作成する
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/result.dart';
@@ -13,7 +11,7 @@ class EndingScreen extends StatefulWidget {
 }
 
 class _EndingScreenState extends State<EndingScreen> {
-  late final List<String> _lines;
+  late List<String> _lines;
   int _index = 0;
   bool _initialized = false;
 
@@ -24,8 +22,6 @@ class _EndingScreenState extends State<EndingScreen> {
       final r = context.read<Result>();
       final avoided = 10 - r.collisions;
       final qc = r.quizCorrect;
-
-      // chosenIDをResultモデルから取得する場合（例: r.chosenID）
       final chosenID = r.chosenId;
 
       if (r.collisions == 0 && qc == 5 && chosenID == 2) {
@@ -47,6 +43,10 @@ class _EndingScreenState extends State<EndingScreen> {
           '（ボロボロのヒノアラシに冷たい視線を送り帰路に着いた）',
         ];
       }
+
+      // 主人公名を反映
+      final name = r.playerName;
+      _lines = _lines.map((s) => s.replaceAll('主', name)).toList();
 
       _initialized = true;
     }
@@ -100,16 +100,6 @@ class _EndingScreenState extends State<EndingScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // エンディングタイトル
-              Text(
-                // 選択肢としても兼用できますが、今回は結果文はセリフで終えているので
-                '', // 空文字にしてタイトルは省略
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(color: Colors.deepOrange),
-              ),
-
               // スコアカード
               Card(
                 elevation: 4,
@@ -117,8 +107,8 @@ class _EndingScreenState extends State<EndingScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 16, horizontal: 24),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                   child: Column(
                     children: [
                       // クイズ正解数

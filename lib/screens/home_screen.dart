@@ -14,28 +14,9 @@ class _HomeScreenState extends State<HomeScreen> {
   // デフォルトはノーマルモード
   GameMode _mode = GameMode.normal;
 
-  void _showFullStory(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('FireTail ストーリー'),
-        content: SingleChildScrollView(
-          child: Text(
-            _fullStory,
-            style: const TextStyle(fontSize: 16),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('閉じる'),
-          ),
-        ],
-      ),
-    );
-  }
   // ─── 全文ストーリー ─────────────────────────────
   static const String _fullStory = '''
+FireTail ストーリー
 コンコン（ドアを叩く音）
 主「こんにちは〜ヒノアラシを選びに来たんですけど、博士はいますか？」
 ドタドタ（階段をおりる音）
@@ -210,6 +191,43 @@ class _HomeScreenState extends State<HomeScreen> {
 知らなければどれだけ楽だったのだろう
 〜シークレットエンド（復讐）〜
 ''';
+  static const String _gameInfo = '''
+◆ ゲームの流れ
+1. 起：主人公の名前とヒノアラシの性格診断（質問3問）
+2. 承：ヒノアラシを連れて冒険へ
+3. 転：落石をジャンプでよけるアクションゲーム
+4. 結：クイズでジムリーダーとバトルし、結果でエンディング分岐
+
+◆ 操作方法
+・落石ゲーム：画面をタップしてジャンプ
+・クイズ：選択肢ボタンをタップして回答
+・各セリフ画面：画面タップで次へ進む
+
+◆ 難易度
+・ノーマル：障害物の出現間隔が一定、クイズは3択
+・ハード　：障害物の出現間隔がランダムで短め、クイズは5択
+''';
+
+  void _showDialog(BuildContext context, String title, String content) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        content: SingleChildScrollView(
+          child: Text(
+            content,
+            style: const TextStyle(fontSize: 16),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('閉じる'),
+          ),
+        ],
+      ),
+    );
+  }
+
 @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -217,23 +235,35 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
 
           // 右上に「ストーリー」ボタン
-          Positioned(
+            Positioned(
             top: 16,
             right: 16,
-            child: ElevatedButton(
-              onPressed: () => _showFullStory(context),
-              child: const Text('ストーリー'),
+            child: Column(
+              children: [
+                ElevatedButton(
+                  onPressed: () =>
+                      _showDialog(context, 'FireTail ストーリー', _fullStory),
+                  child: const Text('ストーリー'),
+                ),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: () =>
+                      _showDialog(context, 'ゲーム説明', _gameInfo),
+                  child: const Text('ゲーム説明'),
+                ),
+              ],
             ),
           ),
 
-          // 中央に START 画像タップ領域 ＋ モード選択
+          // ───────── 中央 START & モード選択 ─────────
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // START 画像
                 GestureDetector(
                   onTap: () {
-                    // /choose ルートにモードを extra で渡す
+                    // /choose へモードを渡す
                     context.go('/choose', extra: _mode);
                   },
                   child: Image.asset(
@@ -244,66 +274,58 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 60),
-               // ノーマル／ハード の切り替えボタン
-                 Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // 『ノーマル』を幅 100 で固定
-                  SizedBox(
-                    width: 100,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _mode == GameMode.normal
-                                ? Colors.deepOrange
-                                : Colors.grey[300],
-                            foregroundColor: _mode == GameMode.normal
-                                ? Colors.white
-                                : Colors.black,
-                            padding: const EdgeInsets.symmetric(vertical: 20),
-                            minimumSize: const Size(10,15),
-                          ),
-                          onPressed: () {
-                            setState(() => _mode = GameMode.normal);
-                          },
-                          child: const Text(
-                            'ノーマル',
-                            style: TextStyle(fontSize: 20),
-                          ),
+                // モード切り替え
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // ノーマル
+                    SizedBox(
+                      width: 100,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _mode == GameMode.normal
+                              ? Colors.deepOrange
+                              : Colors.grey[300],
+                          foregroundColor: _mode == GameMode.normal
+                              ? Colors.white
+                              : Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          minimumSize: const Size(10, 15),
+                        ),
+                        onPressed: () {
+                          setState(() => _mode = GameMode.normal);
+                        },
+                        child: const Text(
+                          'ノーマル',
+                          style: TextStyle(fontSize: 20),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      // ハードモード
-                       Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // 『ノーマル』を幅 100 で固定
-                  SizedBox(
-                    width: 100, 
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _mode == GameMode.hard
-                                ? Colors.redAccent
-                                : Colors.grey[300],
-                            foregroundColor: _mode == GameMode.hard
-                                ? Colors.white
-                                : Colors.black,
-                            padding: const EdgeInsets.symmetric(vertical: 20),
-                            minimumSize: const Size(10, 15),
-                          ),
-                          onPressed: () {
-                            setState(() => _mode = GameMode.hard);
-                          },
-                          child: const Text(
-                            'ハード',
-                            style: TextStyle(fontSize: 20),
-                           ),
+                    ),
+                    const SizedBox(width: 16),
+                    // ハード
+                    SizedBox(
+                      width: 100,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _mode == GameMode.hard
+                              ? Colors.redAccent
+                              : Colors.grey[300],
+                          foregroundColor: _mode == GameMode.hard
+                              ? Colors.white
+                              : Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          minimumSize: const Size(10, 15),
+                        ),
+                        onPressed: () {
+                          setState(() => _mode = GameMode.hard);
+                        },
+                        child: const Text(
+                          'ハード',
+                          style: TextStyle(fontSize: 20),
                         ),
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
                 ),
               ],
             ),

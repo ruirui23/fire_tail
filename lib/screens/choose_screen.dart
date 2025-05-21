@@ -1,5 +1,3 @@
-// lib/screens/choose_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -17,8 +15,36 @@ class ChooseScreen extends StatefulWidget {
 }
 
 class _ChooseScreenState extends State<ChooseScreen> {
-  int _step = 0;
+  /* ───────── ステップ管理 ─────────
+     -1 : 主人公名入力
+      0 : オープニング台詞
+      1〜 : 質問フェーズ … */
+  int _step = -1;
+
+  // ------------- 主人公名 -------------
+  final TextEditingController _nameCtrl = TextEditingController();
+  String _playerName = '主'; // デフォルト（空で確定された場合など）
+
+  // ------------- 質問／回答 -------------
   final List<int> _answers = [-1, -1, -1];
+
+  // 質問データ
+  final List<Map<String, dynamic>> _questions = [
+    {
+      'text':
+          '第1問！目の前で子供が泣いておる。次のうち君のとる行動はなんじゃ？',
+      'options': ['A.心配になり話しかける', 'B.無視する', 'C.つられて泣いてしまう'],
+    },
+    {
+      'text':
+          '第2問！家に泥棒が入ってきてしまった。次のうち君のとる行動はなんじゃ？',
+      'options': ['A.警察を呼ぶ', 'B.こっそり窓から逃げる', 'C.泥棒に立ち向かう'],
+    },
+    {
+      'text': '第3問！信頼していた者に裏切られた。君はどうする？',
+      'options': ['A.事情を受け入れる', 'B.縁を切る', 'C.復讐を誓う'],
+    },
+  ];
 
   // 最終セリフ
   final List<String> _finalLines = [
@@ -29,22 +55,7 @@ class _ChooseScreenState extends State<ChooseScreen> {
   ];
   int _revealIdx = 0;
 
-  // 質問データ
-  final List<Map<String, dynamic>> _questions = [
-    {
-      'text': '第1問！目の前で子供が泣いておる。次のうち君のとる行動はなんじゃ？',
-      'options': ['A.心配になり話しかける', 'B.無視する', 'C.つられて泣いてしまう'],
-    },
-    {
-      'text': '第2問！家に泥棒が入ってきてしまった。次のうち君のとる行動はなんじゃ？',
-      'options': ['A.警察を呼ぶ', 'B.こっそり窓から逃げる', 'C.泥棒に立ち向かう'],
-    },
-    {
-      'text': '第3問！信頼していた者に裏切られた。君はどうする？',
-      'options': ['A.事情を受け入れる', 'B.縁を切る', 'C.復讐を誓う'],
-    },
-  ];
-
+  /* ───────── ヘルパー ───────── */
   void _next() => setState(() => _step++);
   void _answer(int choice) {
     final idx = (_step - 1) ~/ 2;
@@ -52,9 +63,53 @@ class _ChooseScreenState extends State<ChooseScreen> {
     setState(() => _step++);
   }
 
+  // セリフ内の “主” をプレイヤー名に置換
+  String _replaceProtagonist(String text) =>
+      text.replaceAll('主', _playerName);
+
+  /* ───────── ビルド ───────── */
   @override
   Widget build(BuildContext context) {
-    // ステップ0：オープニング（画面全体タップで進む）
+    // ① 主人公名入力シーン
+    if (_step == -1) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '主人公の名前を入力してください',
+                  style: TextStyle(fontSize: 20),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _nameCtrl,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: '名前を入力',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    _playerName =
+                        _nameCtrl.text.trim().isEmpty ? '主' : _nameCtrl.text;
+                    // ここでグローバルに保存
+                    context.read<Result>().setPlayerName(_playerName);
+                    _next(); // ステップ0へ
+                  },
+                  child: const Text('決定'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // ② ステップ0 〜
     if (_step == 0) {
       return Scaffold(
         body: GestureDetector(
@@ -69,20 +124,17 @@ class _ChooseScreenState extends State<ChooseScreen> {
       );
     }
 
-    // 以降は通常のレイアウト
     final revealStart = _questions.length * 2 + 3;
-    Widget content;
+    late Widget content;
 
-    if (_step <= _questions.length * 2) {
-      // 質問フェーズ
+    if (_step >= 1 && _step <= _questions.length * 2) {
       final qIdx = (_step - 1) ~/ 2;
       if (_step.isOdd) {
-        // 質問文＋選択肢
         final q = _questions[qIdx];
         content = Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _dialogueBox(q['text'] as String),
+            _dialogueBox(_replaceProtagonist(q['text'] as String)),
             const SizedBox(height: 16),
             for (int i = 0; i < (q['options'] as List<String>).length; i++)
               Padding(
@@ -95,28 +147,24 @@ class _ChooseScreenState extends State<ChooseScreen> {
           ],
         );
       } else {
-        // 回答フィードバック
         final choice = _answers[qIdx];
         final label = ['A', 'B', 'C'][choice];
-        content = _dialogueBox('主「$label！」', onTap: _next);
+        content =
+            _dialogueBox(_replaceProtagonist('主「$label！」'), onTap: _next);
       }
     } else if (_step == _questions.length * 2 + 1) {
-      // 待機メッセージ
       content = _dialogueBox(
-        'うむ！では君の旅の相棒を連れてくるから少し待っていておくれ',
+        'は「うむ！では君の旅の相棒を連れてくるから少し待っていておくれ」',
         onTap: _next,
       );
     } else if (_step == _questions.length * 2 + 2) {
-      // ドン演出
       content = _dialogueBox('…ドン！！', onTap: _next);
     } else if (_step >= revealStart) {
-      // 相棒発表フェーズ
       final chosenId = _answers.last;
       if (_revealIdx == 0) {
-        // 最初に相棒IDを保存
-        Provider.of<Result>(context, listen: false).setChosen(chosenId);
+        context.read<Result>().setChosen(chosenId);
       }
-      final line = _finalLines[_revealIdx];
+      final line = _replaceProtagonist(_finalLines[_revealIdx]);
       content = Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -124,7 +172,6 @@ class _ChooseScreenState extends State<ChooseScreen> {
             setState(() {
               _revealIdx++;
               if (_revealIdx >= _finalLines.length) {
-                // 全セリフ終わり → 次画面へモード＋IDを渡す
                 context.go(
                   '/game',
                   extra: {'mode': widget.mode, 'id': chosenId},
@@ -132,7 +179,6 @@ class _ChooseScreenState extends State<ChooseScreen> {
               }
             });
           }),
-          // 相棒発表時だけ画像を表示
           if (_revealIdx == 0) ...[
             const SizedBox(height: 16),
             Image.asset(
@@ -143,8 +189,6 @@ class _ChooseScreenState extends State<ChooseScreen> {
           ],
         ],
       );
-    } else {
-      content = const SizedBox.shrink();
     }
 
     return Scaffold(
@@ -157,13 +201,14 @@ class _ChooseScreenState extends State<ChooseScreen> {
     );
   }
 
+  /* ───────── 汎用ダイアログボックス ───────── */
   Widget _dialogueBox(String text, {VoidCallback? onTap}) {
     final box = Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
+        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
       ),
       child: Text(
         text,
@@ -171,8 +216,6 @@ class _ChooseScreenState extends State<ChooseScreen> {
         textAlign: TextAlign.center,
       ),
     );
-    return onTap != null
-        ? GestureDetector(onTap: onTap, child: box)
-        : box;
+    return onTap != null ? GestureDetector(onTap: onTap, child: box) : box;
   }
 }
