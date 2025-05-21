@@ -10,12 +10,9 @@ import '../models/game_mode.dart';
 class GameScreen extends StatefulWidget {
   final int chosenId; // 0,1,2
   final GameMode mode;
-
-  const GameScreen({
-    Key? key,
-    required this.chosenId,
-    required this.mode,
-  }) : super(key: key);
+  const GameScreen(
+      {Key? key, required this.chosenId, required this.mode})
+      : super(key: key);
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -23,81 +20,67 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   late final AdventureGame _game;
+  late List<String> _dialogue; // モード別
+  int _idx = 0;
 
-  // ── 冒頭セリフ ───────────────────────────────────────
-  late List<String> _dialogue;
-  int _index = 0;
-
-  // ── 結果セリフ用 ───────────────────────────────────────
   bool _showResult = false;
   late List<String> _resultDialogue;
-  int _resIndex = 0;
+  int _resIdx = 0;
 
   @override
   void initState() {
     super.initState();
     final name = context.read<Result>().playerName;
-    _dialogue =
-        _lines[widget.chosenId]!.map((s) => s.replaceAll('主', name)).toList();
+    _dialogue = _opening[widget.mode]![widget.chosenId]!
+        .map((l) => l.replaceAll('主', name))
+        .toList();
 
     _game = AdventureGame(
       chosenId: widget.chosenId,
       mode: widget.mode,
       startPaused: true,
       onFinish: () {
-        // 衝突数を保存
         context.read<Result>().setCollisions(_game.collisionCount);
-        // 結果セリフパターンを決定して置換
         final c = _game.collisionCount;
+        String key;
         if (c == 0) {
-          _resultDialogue = _endingsNoMiss;
+          key = 'noMiss';
         } else if (c >= 10) {
-          _resultDialogue = _endingsAllHit;
+          key = 'allHit';
         } else {
-          _resultDialogue = _endingsNormal;
+          key = 'normal';
         }
-        final name = context.read<Result>().playerName;
-        _resultDialogue =
-            _resultDialogue.map((s) => s.replaceAll('主', name)).toList();
-
-        // セリフオーバーレイを表示
+        _resultDialogue = _result[widget.mode]![key]!
+            .map((l) => l.replaceAll('主', name))
+            .toList();
         setState(() {
           _showResult = true;
-          _resIndex = 0;
+          _resIdx = 0;
         });
       },
     );
   }
 
-  /// 選んだヒノアラシ画像のパスを返す
-  String _assetForId(int id) {
-    switch (id) {
-      case 0:
-        return 'assets/images/red.png';
-      case 1:
-        return 'assets/images/blue.png';
-      case 2:
-        return 'assets/images/purple.png';
-      default:
-        return 'assets/images/red.png';
-    }
-  }
+  String _assetForId(int id) => switch (id) {
+        0 => 'assets/images/red.png',
+        1 => 'assets/images/blue.png',
+        2 => 'assets/images/purple.png',
+        _ => 'assets/images/red.png',
+      };
 
-  void _nextLine() {
+  void _next() {
     setState(() {
-      _index++;
-      if (_index >= _dialogue.length) {
-        _index = _dialogue.length;
-        _game.resumeEngine(); // ダイアログ終了でゲーム開始
+      _idx++;
+      if (_idx >= _dialogue.length) {
+        _game.resumeEngine();
       }
     });
   }
 
-  void _nextResultLine() {
+  void _nextRes() {
     setState(() {
-      _resIndex++;
-      if (_resIndex >= _resultDialogue.length) {
-        // 結果セリフ終了でクイズ画面へ（モードを extra で渡す）
+      _resIdx++;
+      if (_resIdx >= _resultDialogue.length) {
         context.go('/quiz', extra: widget.mode);
       }
     });
@@ -106,114 +89,132 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // ── ゲーム本体 ＋ 最背面に背景画像 ─────────────────
-          SizedBox.expand(
-            child: GameWidget(
-              game: _game,
-              backgroundBuilder: (_) => SizedBox.expand(
-                child: Image.asset(
-                  'assets/images/syo.png',
-                  fit: BoxFit.cover,
-                ),
-              ),
+      body: Stack(children: [
+        // 背景＋ゲーム
+        SizedBox.expand(
+          child: GameWidget(
+            game: _game,
+            backgroundBuilder: (_) => SizedBox.expand(
+              child: Image.asset('assets/images/syo.png', fit: BoxFit.cover),
             ),
           ),
-
-          // ── 冒頭ダイアログ中にヒノアラシを表示 ────────────────
-          if (!_showResult && _index < _dialogue.length)
-            Positioned(
-              bottom: 40,
-              left: 300,
-              child: Image.asset(
-                _assetForId(widget.chosenId),
-                width: 200,
-                height: 200,
-              ),
+        ),
+        // 冒頭セリフ
+        if (!_showResult && _idx < _dialogue.length)
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _next,
+            child: Container(
+              color: Colors.black.withOpacity(0.4),
+              alignment: Alignment.bottomCenter,
+              padding: const EdgeInsets.all(24),
+              child: _box(_dialogue[_idx]),
             ),
-
-          // ── 冒頭セリフオーバーレイ ───────────────────────────
-          if (!_showResult && _index < _dialogue.length)
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _nextLine,
-              child: Container(
-                color: Colors.black.withOpacity(0.4),
-                alignment: Alignment.bottomCenter,
-                padding: const EdgeInsets.all(24),
-                child: _buildTextBox(_dialogue[_index]),
-              ),
+          ),
+        // ヒノアラシ立ち絵
+        if (!_showResult && _idx < _dialogue.length)
+          Positioned(
+            bottom: 40,
+            left: 300,
+            child: Image.asset(_assetForId(widget.chosenId),
+                width: 200, height: 200),
+          ),
+        // 結果セリフ
+        if (_showResult)
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _nextRes,
+            child: Container(
+              color: Colors.black.withOpacity(0.6),
+              alignment: Alignment.center,
+              padding: const EdgeInsets.all(24),
+              child: _box(_resultDialogue[_resIdx]),
             ),
-
-          // ── 結果セリフオーバーレイ ───────────────────────────
-          if (_showResult)
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: _nextResultLine,
-              child: Container(
-                color: Colors.black.withOpacity(0.6),
-                alignment: Alignment.center,
-                padding: const EdgeInsets.all(24),
-                child: _buildTextBox(_resultDialogue[_resIndex]),
-              ),
-            ),
-        ],
-      ),
+          ),
+      ]),
     );
   }
 
-  Widget _buildTextBox(String text) => Container(
+  Widget _box(String t) => Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Text(text, style: const TextStyle(fontSize: 18)),
+        child: Text(t, style: const TextStyle(fontSize: 18)),
       );
 }
 
-// ─────────────── 冒頭セリフ ───────────────
-const Map<int, List<String>> _lines = {
-  0: [
-    '主「え〜と、地図通りだとジムリーダーはこの先か…（チラッ）」',
-    '主「このヒノアラシすごい元気だな…ずっとスキップしながらついてきてるよ」',
-    '“ガラガラ”',
-    '主（なんだ？！すごい音がしたような…）',
-    '主（ッ落石か…避けないと大変なことになる）',
-  ],
-  1: [
-    '主「え〜と、地図通りだとジムリーダーはこの先か…（チラッ）」',
-    '主「このヒノアラシすごい静かだな 炎青いし全然懐いてない気がする」',
-    '“ガラガラ”',
-    '主（なんだ？！すごい音がしたような…）',
-    '主（ッ落石か…避けないと大変なことになる）',
-  ],
-  2: [
-    '主「え〜と、地図通りだとジムリーダーはこの先か…（チラッ）」',
-    '主「このヒノアラシちょっと怖いな…懐いてるけど色が紫なんて村で見たことないよ」',
-    '“ガラガラ”',
-    '主（なんだ？！すごい音がしたような…）',
-    '主（ッ落石か…避けないと大変なことになる）',
-  ],
+/* ───────── モード別セリフ ───────── */
+const _opening = <GameMode, Map<int, List<String>>>{
+  GameMode.normal: {
+    0: [
+      '主「え〜と、地図通りだとジムリーダーはこの先か…（チラッ）」',
+      '主「このヒノアラシすごい元気だな…ずっとスキップしながらついてきてるよ」',
+      '“ガラガラ”',
+      '主（なんだ？！すごい音がしたような…）',
+      '主（ッ落石か…避けないと大変なことになる）',
+    ],
+    1: [
+      '主「え〜と、地図通りだとジムリーダーはこの先か…（チラッ）」',
+      '主「このヒノアラシすごい静かだな 炎青いし全然懐いてない気がする」',
+      '“ガラガラ”',
+      '主（なんだ？！すごい音がしたような…）',
+      '主（ッ落石か…避けないと大変なことになる）',
+    ],
+    2: [
+      '主「え〜と、地図通りだとジムリーダーはこの先か…（チラッ）」',
+      '主「このヒノアラシちょっと怖いな…懐いてるけど色が紫なんて村で見たことないよ」',
+      '“ガラガラ”',
+      '主（なんだ？！すごい音がしたような…）',
+      '主（ッ落石か…避けないと大変なことになる）',
+    ],
+  },
+  GameMode.hard: {
+    0: [
+      '主「（u」',
+      '主「ヒ」',
+      '主「（ノ」',
+      '主「（ア」',
+    ],
+    1: [
+      '主「（（イ」',
+      '主「（ノ」', 
+    ],
+    2: [
+      '主「紫炎…嫌な予感しかしない」',
+      '主「（（ノ」',
+    ],
+  },
 };
 
-// ─────────────── 結果セリフパターン ───────────────
-const List<String> _endingsNoMiss = [
-  'ノーミス',
-  '主「ふぅ、間一髪だったな…何とか怪我せずに済んだ」',
-  '主「よし先へ進むか」',
-];
-
-const List<String> _endingsAllHit = [
-  '全滅',
-  '主「うっ…痛い、全身が痛いこんなことならもっと鍛えとけばよかった…ヒノアラシが庇ってくれなかったら死んでたかも」',
-  '(ボロボロになったヒノアラシを見る)',
-  '主「助けてくれてありがとう。手当してから先へ進もうか」',
-];
-
-const List<String> _endingsNormal = [
-  '（ちょいミス）',
-  '主「くっ…少しかすったな、危ないところだった」',
-  '主「あと少しだ、先へ進もう」',
-];
+const _result = <GameMode, Map<String, List<String>>>{
+  GameMode.normal: {
+    'noMiss': [
+      '主「ふぅ、怪我なしで切り抜けた！」',
+      '主「この調子で先へ進もう」',
+    ],
+    'allHit': [
+      '主「うっ…ボロボロだ…」',
+      '主「ヒノアラシが庇ってくれた。ありがとう…」',
+    ],
+    'normal': [
+      '主「なんとか凌いだが油断できない！」',
+      '主「次はもっと素早く動こう」',
+    ],
+  },
+  GameMode.hard: {
+    'noMiss': [
+      '主「a」',
+      '主「i」',
+    ],
+    'allHit': [
+      '主「…」',
+      '主「u」',
+    ],
+    'normal': [
+      '主「o」',
+      '主「ka」',
+    ],
+  },
+};
