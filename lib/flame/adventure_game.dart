@@ -51,8 +51,8 @@ class AdventureGame extends FlameGame
   Future<void> onLoad() async {
     // ────────── モードごとの設定 ──────────
     if (mode == GameMode.normal) {
-      _timeLeft = 16.0;
-      _intervalMin = _intervalMax = 1.3; // 固定1.2秒
+      _timeLeft = 18.0;
+      _intervalMin = _intervalMax = 1.5; // 固定1.2秒
     } else {
       _timeLeft = 16.0;
       _intervalMin = 0.9;    // 最低1.0秒

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/game_mode.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -11,9 +12,36 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // デフォルトはノーマルモード
+  /* ───────── 状態フラグ ───────── */
   GameMode _mode = GameMode.normal;
+  bool _hardUnlocked    = false;   // ハード選択可
+  bool _infoUnlocked    = false;   // ストーリー＆登場人物
+  bool _hardInfoUnlocked= false;   // ハードストーリー＆裏設定
 
+  @override
+  void initState() {
+    super.initState();
+    _loadFlags();
+  }
+
+  Future<void> _loadFlags() async {
+    final p = await SharedPreferences.getInstance();
+    setState(() {
+      _hardUnlocked = p.getBool('hardUnlocked') ?? false;
+
+      final loseN    = p.getBool('end_lose')    ?? false;
+      final winN     = p.getBool('end_win')     ?? false;
+      final secretN  = p.getBool('end_secret')  ?? false;
+      _infoUnlocked  = (loseN && winN && secretN);
+
+      final loseH    = p.getBool('hard_lose')   ?? false;
+      final winH     = p.getBool('hard_win')    ?? false;
+      final secretH  = p.getBool('hard_secret') ?? false;
+      _hardInfoUnlocked = (loseH && winH && secretH);
+    });
+  }
+
+  
   // ─── 全文ストーリー ─────────────────────────────
   static const String _fullStory = '''
 FireTail ストーリー
@@ -208,129 +236,190 @@ FireTail ストーリー
 ・ハード　：障害物の出現間隔がランダムで短め、クイズは5択
 ''';
 
-  void _showDialog(BuildContext context, String title, String content) {
+  static const String _hardStory = '''
+ハードモード ストーリー
+ここにストーリーを入力してね
+''';
+
+  static const String _hiddenInfo = '''
+裏設定
+ここに裏設定を入力してね
+''';
+
+static const _characters = [
+    (
+      '主人公',
+      'ヒノアラシ村に住む新成人。'
+    ),
+    (
+      '博士',
+      'ヒノアラシ研究所の博士。'
+    ),
+    (
+      'アニス',
+      '秘密がある'
+          
+    ),
+    (
+      'ジムリーダー',
+      '謎のジムリーダー。'
+        
+    ),
+  ];
+   /* ───────── 共通ダイアログ ───────── */
+   void _showDialog(String title, String body) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        content: SingleChildScrollView(
-          child: Text(
-            content,
-            style: const TextStyle(fontSize: 16),
-          ),
-        ),
+        title: Text(title),
+        content: SingleChildScrollView(child: Text(body)),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('閉じる'),
-          ),
+          TextButton(onPressed: Navigator.of(context).pop, child: const Text('閉じる')),
         ],
       ),
     );
   }
 
-@override
+  void _showCharactersDialog() {
+    int idx = 0;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (c) => StatefulBuilder(
+        builder: (c, set) => AlertDialog(
+          title: Text(_characters[idx].$1),
+          content: Text(_characters[idx].$2),
+          actions: [
+            TextButton(
+              onPressed: idx > 0 ? () => set(() => idx--) : null,
+              child: const Text('戻る'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (idx < _characters.length - 1) {
+                  set(() => idx++);
+                } else {
+                  Navigator.of(c).pop();
+                }
+              },
+              child: Text(idx < _characters.length - 1 ? '次へ' : '閉じる'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /* ───────── SnackBars ───────── */
+  void _snack(String msg) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+
+  /* ───────── ビルド ───────── */
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-
-          // 右上に「ストーリー」ボタン
-            Positioned(
-            top: 16,
-            right: 16,
-            child: Column(
-              children: [
-                ElevatedButton(
-                  onPressed: () =>
-                      _showDialog(context, 'FireTail ストーリー', _fullStory),
-                  child: const Text('ストーリー'),
-                ),
-                const SizedBox(height: 8),
-                ElevatedButton(
-                  onPressed: () =>
-                      _showDialog(context, 'ゲーム説明', _gameInfo),
-                  child: const Text('ゲーム説明'),
-                ),
-              ],
+      body: Stack(children: [
+        /* ── 右上ボタン群 ───────────────────── */
+        Positioned(
+          top: 16,
+          right: 16,
+          child: Column(children: [
+          
+            // ゲーム説明
+            ElevatedButton(
+              onPressed: () => _showDialog('ゲーム説明', _gameInfo),
+              child: const Text('ゲーム説明'),
             ),
-          ),
-
-          // ───────── 中央 START & モード選択 ─────────
-          Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // START 画像
-                GestureDetector(
-                  onTap: () {
-                    // /choose へモードを渡す
-                    context.go('/choose', extra: _mode);
-                  },
-                  child: Image.asset(
-                    'assets/images/start.png',
-                    width: 300,
-                    height: 300,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                const SizedBox(height: 60),
-                // モード切り替え
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // ノーマル
-                    SizedBox(
-                      width: 100,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _mode == GameMode.normal
-                              ? Colors.deepOrange
-                              : Colors.grey[300],
-                          foregroundColor: _mode == GameMode.normal
-                              ? Colors.white
-                              : Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          minimumSize: const Size(10, 15),
-                        ),
-                        onPressed: () {
-                          setState(() => _mode = GameMode.normal);
-                        },
-                        child: const Text(
-                          'ノーマル',
-                          style: TextStyle(fontSize: 20),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    // ハード
-                    SizedBox(
-                      width: 100,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _mode == GameMode.hard
-                              ? Colors.redAccent
-                              : Colors.grey[300],
-                          foregroundColor: _mode == GameMode.hard
-                              ? Colors.white
-                              : Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          minimumSize: const Size(10, 15),
-                        ),
-                        onPressed: () {
-                          setState(() => _mode = GameMode.hard);
-                        },
-                        child: const Text(
-                          'ハード',
-                          style: TextStyle(fontSize: 20),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            const SizedBox(height: 8),
+              // ノーマルストーリー
+            ElevatedButton(
+              onPressed: _infoUnlocked
+                  ? () => _showDialog('FireTail ストーリー', _fullStory)
+                  : () => _snack('ノーマルストーリーはノーマルの３種エンド達成後に解放されます！'),
+              style: _infoUnlocked
+                  ? null
+                  : ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+              child: const Text('ノーマルストーリー'),
             ),
+            const SizedBox(height: 8),
+            // 登場人物
+            ElevatedButton(
+              onPressed: _infoUnlocked ? _showCharactersDialog
+                                       : () => _snack('登場人物はノーマルの３種エンド達成後に解放されます！'),
+              style: _infoUnlocked
+                  ? null
+                  : ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+              child: const Text('登場人物'),
+            ),
+            const SizedBox(height: 8),
+            // ハードモードストーリー
+            ElevatedButton(
+              onPressed: _hardInfoUnlocked
+                  ? () => _showDialog('ハードモード ストーリー', _hardStory)
+                  : () => _snack('ハードストーリーはハードの３種エンド達成後に解放されます！'),
+              style: _hardInfoUnlocked
+                  ? null
+                  : ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+              child: const Text('ハードストーリー'),
+            ),
+            const SizedBox(height: 8),
+            // 裏設定
+            ElevatedButton(
+              onPressed: _hardInfoUnlocked
+                  ? () => _showDialog('裏設定', _hiddenInfo)
+                  : () => _snack('裏設定はハードの３種エンド達成後に解放されます！'),
+              style: _hardInfoUnlocked
+                  ? null
+                  : ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+              child: const Text('裏設定'),
+            ),
+          ]),
+        ),
+
+        /* ── 中央：START と難易度ボタン ─────────── */
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: () => context.go('/choose', extra: _mode),
+                child: Image.asset('assets/images/start.png',
+                    width: 300, height: 300, fit: BoxFit.contain),
+              ),
+              const SizedBox(height: 60),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _diffButton('ノーマル', GameMode.normal, Colors.deepOrange),
+                  const SizedBox(width: 16),
+                  _diffButton('ハード', GameMode.hard, Colors.redAccent),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
+      ]),
+    );
+  }
+
+  /* ───────── 難易度ボタン ───────── */
+  Widget _diffButton(String label, GameMode gm, Color activeColor) {
+    final locked = (gm == GameMode.hard && !_hardUnlocked);
+    return SizedBox(
+      width: 100,
+      child: ElevatedButton(
+        onPressed: locked
+            ? () => _snack('まずノーマルで勝ちかシークレットを達成してハードを解放してください！')
+            : () => setState(() => _mode = gm),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: locked
+              ? Colors.grey
+              : (_mode == gm ? activeColor : Colors.grey[300]),
+          foregroundColor:
+              locked ? Colors.black45 : (_mode == gm ? Colors.white : Colors.black),
+          padding: const EdgeInsets.symmetric(vertical: 20),
+        ),
+        child: Text(label, style: const TextStyle(fontSize: 20)),
       ),
     );
   }
