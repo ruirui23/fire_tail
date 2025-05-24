@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flame_audio/flame_audio.dart';
 
 import '../models/hinoarashi.dart';
 import '../models/game_mode.dart';
 import '../models/result.dart';
+import '../flame/adventure_game.dart';
 
 class ChooseScreen extends StatefulWidget {
   final GameMode mode;
@@ -55,10 +57,17 @@ class _ChooseScreenState extends State<ChooseScreen> {
   int _revealIdx = 0;
 
   /* ───────── ヘルパー ───────── */
-  void _next() => setState(() => _step++);
+  void _next() {
+  if (_step >= 1) {
+    FlameAudio.play('messagechange.mp3', volume: 0.2);
+   }
+  setState(() => _step++);
+  }
+  
   void _answer(int choice) {
     final idx = (_step - 2) ~/ 2; // 質問は step 2 から
     _answers[idx] = choice;
+    FlameAudio.play('messagechange.mp3', volume: 0.2);
     setState(() => _step++);
   }
   String _rp(String s) => s.replaceAll('主', _playerName);
@@ -163,6 +172,7 @@ class _ChooseScreenState extends State<ChooseScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _dialogueBox(line, onTap: () {
+            FlameAudio.play('messagechange.mp3', volume: 0.2);
             setState(() {
               _revealIdx++;
               if (_revealIdx >= _finalLines.length) {
