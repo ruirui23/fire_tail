@@ -68,23 +68,35 @@ class _EndingScreenState extends State<EndingScreen> {
   @override
   Widget build(BuildContext context) {
     final r = context.watch<Result>();
+
+    Widget bg = Positioned.fill(
+      child: Image.asset(
+        'assets/images/hionoarashimura.png',
+        fit: BoxFit.cover,
+      ),
+    );
     if (_idx < _lines.length) {
       return Scaffold(
         backgroundColor: Colors.black,
-        body: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: _next,
-          child: Center(
-            child: Container(
-              margin: const EdgeInsets.all(24),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(12)),
-              child: Text(_lines[_idx],
-                  style: const TextStyle(fontSize: 18),
-                  textAlign: TextAlign.center),
+        body: Stack(
+          children: [
+            bg,
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _next,
+              child: Center(
+                child: Container(
+                  margin: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                  child: Text(_lines[_idx],
+                      style: const TextStyle(fontSize: 18),
+                      textAlign: TextAlign.center),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       );
     }
