@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../models/hinoarashi.dart';
 import '../models/game_mode.dart';
 import '../models/result.dart';
-
+import '../utils/hino_asset.dart';
 class ChooseScreen extends StatefulWidget {
   final GameMode mode;
   const ChooseScreen({super.key, required this.mode});
@@ -234,6 +234,47 @@ class _ChooseScreenState extends State<ChooseScreen> {
           ],
         );
       }
+
+    } else if (_step == _questions.length * 2 + 2) {
+      content = _dialogueBox(
+        'は「うむ！では君の旅の相棒を連れてくるから少し待っていておくれ」',
+        onTap: _next,
+      );
+    } else if (_step == _questions.length * 2 + 3) {
+      content = _dialogueBox('…ドン！！', onTap: _next);
+    } else if (_step >= revealStart) {
+      final chosenId = _answers.last;
+      if (_revealIdx == 0) {
+        context.read<Result>().setChosen(chosenId);
+      }
+      final line = _rp(_finalLines[_revealIdx]);
+      content = Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _dialogueBox(line, onTap: () {
+            setState(() {
+              _revealIdx++;
+              if (_revealIdx >= _finalLines.length) {
+                context.go(
+                  '/game',
+                  extra: {'mode': widget.mode, 'id': chosenId},
+                );
+              }
+            });
+          }),
+          if (_revealIdx == 0) ...[
+            const SizedBox(height: 16),
+            Image.asset(
+ chosenId == 2                     // 2＝シークレットを選んだ時だけ
+    ? secretHinorashiAsset(widget.mode)
+    : Hinorashi.options[chosenId].assetPath,
+  width: 200,
+  height: 200,
+            ),
+          ],
+        ],
+      );
+
     }
 
     return Scaffold(
