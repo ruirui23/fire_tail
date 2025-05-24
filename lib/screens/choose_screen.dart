@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../models/hinoarashi.dart';
 import '../models/game_mode.dart';
 import '../models/result.dart';
-
+import '../utils/hino_asset.dart';
 class ChooseScreen extends StatefulWidget {
   final GameMode mode;
   const ChooseScreen({Key? key, required this.mode}) : super(key: key);
@@ -176,9 +176,11 @@ class _ChooseScreenState extends State<ChooseScreen> {
           if (_revealIdx == 0) ...[
             const SizedBox(height: 16),
             Image.asset(
-              Hinorashi.options[chosenId].assetPath,
-              width: 200,
-              height: 200,
+ chosenId == 2                     // 2＝シークレットを選んだ時だけ
+    ? secretHinorashiAsset(widget.mode)
+    : Hinorashi.options[chosenId].assetPath,
+  width: 200,
+  height: 200,
             ),
           ],
         ],

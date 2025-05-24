@@ -68,7 +68,7 @@ class _EndingScreenState extends State<EndingScreen> {
   */
   Widget _background() => Positioned.fill(
         child: Image.asset(
-          'assets/images/hinoarashimura.png',
+          'assets/images/hionoarashimura.png',
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => Image.asset(
             'assets/images/hinoarashi.png',
