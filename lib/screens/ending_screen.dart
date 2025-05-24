@@ -66,10 +66,24 @@ class _EndingScreenState extends State<EndingScreen> {
      2) hinoarashi.png
      3) グレー
   */
+
 int _bgType = 0;
 void _next() {
   setState(() {
     _idx++;
+
+  Widget _background() => Positioned.fill(
+        child: Image.asset(
+          'assets/images/hionoarashimura.png',
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Image.asset(
+            'assets/images/hinoarashi.png',
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) =>
+                Container(color: Colors.grey[200]),
+          ),
+        ),
+      );
 
     // 背景変更条件
     if (_idx < _lines.length) {

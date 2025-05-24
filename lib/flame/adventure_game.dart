@@ -1,4 +1,4 @@
-// 障害物をよけるゲームを
+// 障害物をよけるゲーム
 
 import 'dart:math';
 import 'package:flame/components.dart';
@@ -9,6 +9,7 @@ import 'dart:ui'; // Color 用
 import '../models/game_mode.dart';
 import 'player.dart';
 import 'obstacle.dart';
+import 'package:flame_audio/flame_audio.dart';
 
 class AdventureGame extends FlameGame
     with TapCallbacks, HasCollisionDetection {
@@ -118,12 +119,22 @@ class AdventureGame extends FlameGame
   }
 
   @override
-  void onTapDown(TapDownEvent _) => _player.jump();
+  void onTapDown(TapDownEvent _) { 
+  FlameAudio.play('Anime_Motion08-2(Mid).mp3');
+   _player.jump();
+  }
 
-  String _pathForId(int id) => switch (id) {
-        0 => 'red.png',
-        1 => 'blue.png',
-        2 => 'purple.png',
-        _ => 'rock.png',
-      };
+ /// id==2 (シークレット) はモードで purple / green を切替
+String _pathForId(int id) {
+  if (id == 2) {
+    return mode == GameMode.hard ? 'purple.png' : 'green.png';
+  }
+  switch (id) {
+    case 0:  return 'red.png';
+    case 1:  return 'blue.png';
+    default: return 'red.png';
+  }
 }
+
+  }
+    

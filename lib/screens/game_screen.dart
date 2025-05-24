@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:flame_audio/flame_audio.dart';
 
 import '../flame/adventure_game.dart';
 import '../models/result.dart';
 import '../models/game_mode.dart';
-
 class GameScreen extends StatefulWidget {
   final int chosenId; // 0,1,2
   final GameMode mode;
@@ -61,24 +61,45 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  String _assetForId(int id) => switch (id) {
-        0 => 'assets/images/red.png',
-        1 => 'assets/images/blue.png',
-        2 => 'assets/images/purple.png',
-        _ => 'assets/images/red.png',
-      };
+  
+ String _assetForId(int id) {
+    if (id == 2) {
+      return widget.mode == GameMode.hard      // ← ハード？
+          ? 'assets/images/purple.png'         
+          : 'assets/images/green.png';        
+    }
+    // 通常 3 色は今まで通り
+    switch (id) {
+      case 0:
+        return 'assets/images/red.png';
+      case 1:
+        return 'assets/images/blue.png';
+      default:
+        return 'assets/images/putple.png';
+    }
+  }
 
   void _next() {
     setState(() {
+     // 「ガラガラ」セリフなら落石音だけ鳴らし、通常はセリフ切り替え音
+    if (_idx + 1 < _dialogue.length && _dialogue[_idx + 1].contains("ガラガラ")) {
+      // 次のセリフが「ガラガラ」なら落石音のみ
       _idx++;
-      if (_idx >= _dialogue.length) {
-        _game.resumeEngine();
-      }
-    });
-  }
+      FlameAudio.play('kan_ge_gakefuti01.mp3');
+    } else {
+      // 通常はセリフ切り替え音
+      FlameAudio.play('messagechange.mp3', volume: 0.2);
+      _idx++;
+    }
+    if (_idx >= _dialogue.length) {
+      _game.resumeEngine();
+    }
+  });
+}
 
   void _nextRes() {
     setState(() {
+      FlameAudio.play('messaagechange.mp3', volume: 0.2);
       _resIdx++;
       if (_resIdx >= _resultDialogue.length) {
         context.go('/quiz', extra: widget.mode);
