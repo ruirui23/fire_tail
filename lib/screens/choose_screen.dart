@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flame_audio/flame_audio.dart';
 
 import '../models/hinoarashi.dart';
 import '../models/game_mode.dart';
 import '../models/result.dart';
+
+import '../flame/adventure_game.dart';
 import '../utils/hino_asset.dart';
 
 class ChooseScreen extends StatefulWidget {
@@ -74,6 +77,19 @@ class _ChooseScreenState extends State<ChooseScreen> {
       '2階に到着',
     ],};
 
+  /* ───────── ヘルパー ───────── */
+  void _next() {
+  if (_step >= 1) {
+    FlameAudio.play('messagechange.mp3', volume: 0.2);
+   }
+  setState(() => _step++);
+  }
+  
+  void _answer(int choice) {
+    final idx = (_step - 2) ~/ 2; // 質問は step 2 から
+    _answers[idx] = choice;
+    FlameAudio.play('messagechange.mp3', volume: 0.2);
+
   final Map<GameMode, List<String>> _finalLines = {  GameMode.normal: [
       '博士「この子が君の相棒じゃ！」',
       '主「ありがとう、すごく可愛い！」',
@@ -88,13 +104,7 @@ class _ChooseScreenState extends State<ChooseScreen> {
       '主（アニス？あーあの助手の人、そういえばそんな名前だったっけ）',
     ], };
 
-  /* ───── ユーティリティ ───── */
-  void _next() => setState(() => _step++);
-  void _answer(int c) {
-    final idx = (_step - 2) ~/ 2;
-    _answers[idx] = c;
-    setState(() => _step++);
-  }
+
 
   String _rp(String s) => s.replaceAll('主', _playerName);
 
@@ -200,51 +210,47 @@ class _ChooseScreenState extends State<ChooseScreen> {
         }
       }
 
-      // 相棒連れてくる → ドン！
-      else if (_step == _questions.length * 2 + 2) {
-        content = _dialogueBox('博士「うむ！では君の旅の相棒を連れてくるから少し待っていておくれ」',
-            onTap: _next);
-      } else if (_step == _questions.length * 2 + 3) {
-        content = _dialogueBox('…ドン！！', onTap: _next);
-      }
+  
 
-      // 最終セリフ＆立ち絵
-      else if (_step >= revealStart) {
-        final chosenId = _answers.last;
-        if (_revealIdx == 0) {
-          context.read<Result>().setChosen(chosenId);
-        }
-        content = Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                setState(() {
-                  _revealIdx++;
-                  if (_revealIdx >= _finalLines[widget.mode]!.length) {
-                    context.go('/game',
-                        extra: {'mode': widget.mode, 'id': chosenId});
-                  }
-                });
-              },
-              child: _oneLineScene(
-                  _rp(_finalLines[widget.mode]![_revealIdx]),
-                  noScaffold: true),
-            ),
-            if (_revealIdx == 0) ...[
-              const SizedBox(height: 16),
-              Image.asset(
-                chosenId == 2
-                    ? secretHinorashiAsset(widget.mode)
-                    : Hinorashi.options[chosenId].assetPath,
-                width: 200,
-                height: 200,
-              ),
-            ],
-          ],
-        );
+    } else if (_step == _questions.length * 2 + 2) {
+      content = _dialogueBox(
+        'は「うむ！では君の旅の相棒を連れてくるから少し待っていておくれ」',
+        onTap: _next,
+      );
+    } else if (_step == _questions.length * 2 + 3) {
+      content = _dialogueBox('…ドン！！', onTap: _next);
+    } else if (_step >= revealStart) {
+      final chosenId = _answers.last;
+      if (_revealIdx == 0) {
+        context.read<Result>().setChosen(chosenId);
       }
+      final line = _rp(_finalLines[_revealIdx]);
+      content = Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _dialogueBox(line, onTap: () {
+            FlameAudio.play('messagechange.mp3', volume: 0.2);
+            setState(() {
+              _revealIdx++;
+              if (_revealIdx >= _finalLines.length) {
+                context.go(
+                  '/game',
+                  extra: {'mode': widget.mode, 'id': chosenId},
+                );
+              }
+            });
+          }),
+          if (_revealIdx == 0) ...[
+            const SizedBox(height: 16),
+            Image.asset(
+              Hinorashi.options[chosenId].assetPath,
+              width: 200,
+              height: 200,
+            ),
+          ],
+        ],
+      );
+
     }
 
     /* ── 背景付き Scaffold ── */
