@@ -124,10 +124,17 @@ class AdventureGame extends FlameGame
    _player.jump();
   }
 
-  String _pathForId(int id) => switch (id) {
-        0 => 'red.png',
-        1 => 'blue.png',
-        2 => 'purple.png',
-        _ => 'rock.png',
-      };
+ /// id==2 (シークレット) はモードで purple / green を切替
+String _pathForId(int id) {
+  if (id == 2) {
+    return mode == GameMode.hard ? 'purple.png' : 'green.png';
+  }
+  switch (id) {
+    case 0:  return 'red.png';
+    case 1:  return 'blue.png';
+    default: return 'red.png';
+  }
 }
+
+  }
+    

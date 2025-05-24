@@ -7,7 +7,6 @@ import 'package:flame_audio/flame_audio.dart';
 import '../flame/adventure_game.dart';
 import '../models/result.dart';
 import '../models/game_mode.dart';
-
 class GameScreen extends StatefulWidget {
   final int chosenId; // 0,1,2
   final GameMode mode;
@@ -62,12 +61,23 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  String _assetForId(int id) => switch (id) {
-        0 => 'assets/images/red.png',
-        1 => 'assets/images/blue.png',
-        2 => 'assets/images/purple.png',
-        _ => 'assets/images/red.png',
-      };
+  
+ String _assetForId(int id) {
+    if (id == 2) {
+      return widget.mode == GameMode.hard      // ← ハード？
+          ? 'assets/images/purple.png'         
+          : 'assets/images/green.png';        
+    }
+    // 通常 3 色は今まで通り
+    switch (id) {
+      case 0:
+        return 'assets/images/red.png';
+      case 1:
+        return 'assets/images/blue.png';
+      default:
+        return 'assets/images/putple.png';
+    }
+  }
 
   void _next() {
     setState(() {
