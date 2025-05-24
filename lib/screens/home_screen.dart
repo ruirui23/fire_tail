@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/game_mode.dart';
 import 'package:fire_tail/data/texts.dart' as txt;
+import 'package:flame_audio/flame_audio.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -109,7 +110,12 @@ class _HomeScreenState extends State<HomeScreen> {
           Center(
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               GestureDetector(
-                onTap: () => context.go('/choose', extra: _mode),
+                onTap: () {
+                  FlameAudio.play('startbutton.mp3');
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                   context.go('/choose', extra: _mode);
+                });
+            },
                 child: Image.asset('assets/images/start.png', width: 300),
               ),
               const SizedBox(height: 40),
