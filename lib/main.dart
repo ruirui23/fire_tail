@@ -17,7 +17,7 @@ class HinorashiApp extends StatelessWidget {
   const HinorashiApp({super.key});
   @override
   Widget build(BuildContext context) => MaterialApp.router(
-        title: 'Hinorashi Adventure',
+        title: 'FireTail ',
         theme: ThemeData(
           colorSchemeSeed: Colors.orange,
           useMaterial3: true,
