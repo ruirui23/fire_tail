@@ -66,29 +66,82 @@ class _EndingScreenState extends State<EndingScreen> {
      2) hinoarashi.png
      3) グレー
   */
-  Widget _background() => Positioned.fill(
-        child: Image.asset(
-          'assets/images/hinoarashimura.png',
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Image.asset(
-            'assets/images/hinoarashi.png',
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
-                Container(color: Colors.grey[200]),
-          ),
-        ),
-      );
+int _bgType = 0;
+void _next() {
+  setState(() {
+    _idx++;
 
-  /* ───────── UI ───────── */
-  void _next() => setState(() => _idx++);
-
-  @override
-  Widget build(BuildContext context) {
-    final r = context.watch<Result>();
-
-    /* ── セリフパート ── */
+    // 背景変更条件
     if (_idx < _lines.length) {
-      return Scaffold(
+      final line = _lines[_idx];
+
+      if (line.contains('ただいま')) {
+        _bgType = 1; // 村背景
+      }
+       if (line.contains('村の宴')) {
+        _bgType = 2; 
+      }
+       if (line.contains('庭先')) {
+        _bgType = 3; 
+      }
+      if (line.contains('研究所全体')) {
+        _bgType = 4; // 研究所背景炎上
+      }
+      if (line.contains('お久しぶり')) {
+        _bgType = 5; // 研究所背景
+      }
+      if (line.contains('うっ……')) {
+        _bgType = 6; // 暗転
+      }
+     
+    }
+  });
+}
+Widget _background() {
+  String imagePath;
+
+  switch (_bgType) {
+    case 1:
+      imagePath = 'assets/images/hionoarashimura.png'; 
+      break;
+    case 2:
+      imagePath = 'assets/images/utage.png'; 
+      break;
+    case 3:
+      imagePath = 'assets/images/anisu.png'; 
+      break;
+    case 4:
+      imagePath = 'assets/images/hakase.png'; 
+      break;
+    case 5:
+      imagePath = 'assets/images/hakase2.png'; 
+      break;
+    case 6:
+      imagePath = 'assets/images/kuro.png'; 
+      break;
+    default:
+      imagePath = 'assets/images/battle.png'; 
+  }
+
+  return Positioned.fill(
+    child: Image.asset(
+      imagePath,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Container(color: Colors.grey[200]),
+    ),
+  );
+}
+
+
+/* ───────── UI ───────── */
+
+@override
+Widget build(BuildContext context) {
+  final r = context.watch<Result>();
+
+  /* ── セリフパート ── */
+  if (_idx < _lines.length) {
+    return Scaffold(
         body: Stack(children: [
           _background(),
           GestureDetector(
@@ -164,7 +217,8 @@ class _EndingScreenState extends State<EndingScreen> {
 const _endPreset = <GameMode, Map<String, List<String>>>{
   GameMode.normal: {
     'win': [
-     '主「よし！何とか倒したぞ…これで村に帰れる！」',
+     '主「よし！何とか倒したぞ…」',
+     'これで村に帰れる！」',
       '（大切な相棒と軽い足取りで帰路に着いた）',
       '主「ただいま〜！」',
       'アニス「あぁ〇じゃない！１ヶ月ぶりね、ジムリーダーは倒せたの？」',
@@ -181,7 +235,7 @@ const _endPreset = <GameMode, Map<String, List<String>>>{
     'lose': [
       '主「うう…負けちゃった、これじゃ村に帰れないよ」',
       '主「「とりあえず報告だけしに行こう」',
-      'ボロボロのヒノアラシを抱え私たちは帰路に着いた'
+      'ボロボロのヒノアラシを抱え私たちは帰路に着いた',
       '主「ただいま…」',
       'アニス「〇じゃない！１ヶ月ぶりね、ジムリーダーは倒せたの？」',
       '主「ううん負けちゃった……」',
@@ -195,7 +249,7 @@ const _endPreset = <GameMode, Map<String, List<String>>>{
       '主「追放ってこと…？そんなの酷すぎるよ！」',
       'アニス「ごめんね私にはどうすることも…」',
       '博士「そうかそうか失敗したのか、仕方ないのう君は私の実験体になってもらおうかのう」',
-      '主「いつの間に…っう」',
+      '主「うっ……」',
       '博士の言葉を聞いたあと私は深い眠りについた',
       'そのあとのことは覚えていない',
 
@@ -288,14 +342,15 @@ const _endPreset = <GameMode, Map<String, List<String>>>{
     'evolution': [
      '主「？！急に姿が変わった…勝ちは勝ちだ、帰ろう！」',
      '（姿の変わった相棒と帰路に着いた）',
-     '主「ただいま戻りました！」',
+     '主「お久しぶりです！今戻りました！」',
      '助手（アニス）「１ヶ月ぶりですね、ジムリーダーは倒せまし……っ？！」',
      '主「あぁこの子ですか、急に姿が変わってしまって」',
      '助手（アニス）「それは進化って言ってヒノアラシがマグマラシに進化したのでしょう」',
      '主「そうなんですね！可愛い〜」',
-     '助手（アニス）「と、とりあえずその子を2階に上げましょう！疲れてるみたいですし…治療しますので」',
+     '助手（アニス）「と、とりあえずその子を研究所の2階に上げましょう！」',
+     '助手（アニス）「つ、疲れてるみたいですし…治療しますので！」'
      '主（ん？何をそんなに焦っているんだ？）',
-     '助手（アニス）「さあ、早く」',
+     '助手（アニス）「さあ、早く…っ」',
      'アニスがマグマラシに触れた瞬間マグマラシが体から紫色の炎を放った',
      'アニスが炎に包まれ、研究所全体も飲み込んでいく',
      '何とか研究所から出た私は目を疑った',
