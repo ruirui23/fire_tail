@@ -67,23 +67,13 @@ class _EndingScreenState extends State<EndingScreen> {
      3) グレー
   */
 
+
+
 int _bgType = 0;
 void _next() {
   setState(() {
     _idx++;
 
-  Widget _background() => Positioned.fill(
-        child: Image.asset(
-          'assets/images/hionoarashimura.png',
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Image.asset(
-            'assets/images/hinoarashi.png',
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
-                Container(color: Colors.grey[200]),
-          ),
-        ),
-      );
 
     // 背景変更条件
     if (_idx < _lines.length) {
@@ -263,7 +253,7 @@ const _endPreset = <GameMode, Map<String, List<String>>>{
       '主「追放ってこと…？そんなの酷すぎるよ！」',
       'アニス「ごめんね私にはどうすることも…」',
       '博士「そうかそうか失敗したのか、仕方ないのう君は私の実験体になってもらおうかのう」',
-      '主「うっ……」',
+      '主「いつの間に…うっ……」',
       '博士の言葉を聞いたあと私は深い眠りについた',
       'そのあとのことは覚えていない',
 
