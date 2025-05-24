@@ -1,4 +1,4 @@
-// 障害物をよけるゲームを
+// 障害物をよけるゲーム
 
 import 'dart:math';
 import 'package:flame/components.dart';
