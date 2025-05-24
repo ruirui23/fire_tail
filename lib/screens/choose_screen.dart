@@ -104,7 +104,8 @@ class _ChooseScreenState extends State<ChooseScreen> {
     /* ① 名前入力シーン */
     if (_step == -1) {
       return Scaffold(
-        body: Center(
+        body: 
+        Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
