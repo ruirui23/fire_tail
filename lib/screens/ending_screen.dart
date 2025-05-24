@@ -1,64 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';import '../models/result.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../models/result.dart';
 import '../models/game_mode.dart';
 
 class EndingScreen extends StatefulWidget {
   const EndingScreen({super.key});
   @override
   State<EndingScreen> createState() => _EndingScreenState();
-}class _EndingScreenState extends State<EndingScreen> {
+}
+
+class _EndingScreenState extends State<EndingScreen> {
   late List<String> _lines;
-  int _idx = 0, _initialized = 0;
+  int _idx = 0;
+  bool _inited = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_initialized == 1) return;
+    if (_inited) return;
 
-    final r = context.read<Result>();
-    final mode =
-        GoRouterState.of(context).extra as GameMode? ?? GameMode.normal;
-    final avoided = 10 - r.collisions;
-    final qc = r.quizCorrect;
-    final chosen = r.chosenId;
+    final r    = context.read<Result>();
+    final mode = GoRouterState.of(context).extra as GameMode? ?? GameMode.normal;
+
+    /* ── エンディング種別判定 ── */
+    final qc      = r.quizCorrect;
+    final chosen  = r.chosenId;
 
     String key;
     if (r.collisions == 0 && qc == 5 && chosen == 2) {
-      key = 'evolution';
-    } else if (avoided >= 1 && avoided <= 9 && qc >= 3) {
-      key = 'win';
+      key = 'evolution';              // シークレット
+    } else if (r.collisions >2 && r.collisions <9&& qc >= 2) {
+      key = 'win';                    // 勝ち
     } else {
-      key = 'lose';
+      key = 'lose';                   // 負け
     }
-   _lines = _endPreset[mode]![key]!
-        .map((l) => l.replaceAll('主', r.playerName))
+
+    _saveFlags(mode, key);
+
+    _lines = _endPreset[mode]![key]!
+        .map((s) => s.replaceAll('主', r.playerName))
         .toList();
-    _initialized = 1;
+
+    _inited = true;
   }
 
- void _next() => setState(() => _idx++);
+  /* ─── フラグ保存 ─── */
+  Future<void> _saveFlags(GameMode mode, String key) async {
+    final p = await SharedPreferences.getInstance();
+    if (mode == GameMode.normal) {
+      if (key == 'lose')       p.setBool('end_lose', true);
+      if (key == 'win')        p.setBool('end_win', true);
+      if (key == 'evolution')  p.setBool('end_secret', true);
+      if (key == 'win' || key == 'evolution') p.setBool('hardUnlocked', true);
+    } else {
+      if (key == 'lose')       p.setBool('hard_lose', true);
+      if (key == 'win')        p.setBool('hard_win', true);
+      if (key == 'evolution')  p.setBool('hard_secret', true);
+    }
+  }
+
+  /* ─── UI ─── */
+  void _next() => setState(() => _idx++);
 
   @override
   Widget build(BuildContext context) {
     final r = context.watch<Result>();
-
-   if (_idx < _lines.length) {
+    if (_idx < _lines.length) {
       return Scaffold(
         backgroundColor: Colors.black,
         body: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: _next,
-          child: Container(
-            color: Colors.black.withOpacity(0.6),
-            alignment: Alignment.center,
-            padding: const EdgeInsets.all(24),
+          child: Center(
             child: Container(
+              margin: const EdgeInsets.all(24),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
+                color: Colors.white, borderRadius: BorderRadius.circular(12)),
               child: Text(_lines[_idx],
                   style: const TextStyle(fontSize: 18),
                   textAlign: TextAlign.center),
@@ -68,60 +89,45 @@ class EndingScreen extends StatefulWidget {
       );
     }
 
-    // スコア画面
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(title: const Text('エンドロール')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                child: Column(children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Text('クイズ正解数: ',
-                        style: Theme.of(context).textTheme.bodyMedium),
-                    Text('${r.quizCorrect} / 5',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineMedium
-                            ?.copyWith(color: Colors.blue)),
-                  ]),
-                  const SizedBox(height: 16),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Text('当たった障害物: ',
-                        style: Theme.of(context).textTheme.bodyMedium),
-                    Text('${r.collisions} / 10',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineMedium
-                            ?.copyWith(color: Colors.red)),
-                  ]),
-                ]),
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () => context.go('/'),
-              icon: const Icon(Icons.replay),
-              label: const Text('もう一度遊ぶ'),
-              style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                  textStyle: const TextStyle(fontSize: 18)),
-            ),
-          ]),
-        ),
-      ),
-    );
+    return _scoreCard(context, r);
   }
+
+  Widget _scoreCard(BuildContext ctx, Result r) => Scaffold(
+        backgroundColor: Colors.grey[100],
+        appBar: AppBar(title: const Text('エンドロール')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Card(
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                  child: Column(children: [
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      const Text('クイズ正解数: '),
+                      Text('${r.quizCorrect}/5',
+                          style: const TextStyle(fontSize: 24, color: Colors.blue)),
+                    ]),
+                    const SizedBox(height: 16),
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      const Text('当たった障害物: '),
+                      Text('${r.collisions}/10',
+                          style: const TextStyle(fontSize: 24, color: Colors.red)),
+                    ]),
+                  ]),
+                ),
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: () => context.go('/'),
+                icon: const Icon(Icons.replay),
+                label: const Text('もう一度遊ぶ'),
+              )
+            ]),
+          ),
+        ),
+      );
 }
 
 /* ───────── モード別エンディング ───────── */
