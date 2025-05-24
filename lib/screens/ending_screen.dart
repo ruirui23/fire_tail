@@ -94,11 +94,15 @@ void _next() {
       if (line.contains('お久しぶり')) {
         _bgType = 5; // 研究所背景
       }
-      if (line.contains('うっ……')) {
+      if (line.contains('うっ……')|| line.contains('ふぅ〜')) {
         _bgType = 6; // 暗転
       }
-     
+      if (line.contains('目が覚めたかい？')) {
+        _bgType = 7; // 
+      }
+
     }
+
   });
 }
 Widget _background() {
@@ -122,6 +126,9 @@ Widget _background() {
       break;
     case 6:
       imagePath = 'assets/images/kuro.png'; 
+      break;
+    case 7:
+      imagePath = 'assets/images/chika.png'; 
       break;
     default:
       imagePath = 'assets/images/battle.png'; 
