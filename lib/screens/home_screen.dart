@@ -21,8 +21,17 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadFlags();
+
+    FlameAudio.bgm.initialize();
+    FlameAudio.bgm.play('homeBGM (online-audio-converter.com).mp3', volume: 0.5);
   }
 
+  @override
+  void dispose() {
+    FlameAudio.bgm.stop();
+    super.dispose();
+  }
+  
   Future<void> _loadFlags() async {
     final p = await SharedPreferences.getInstance();
     setState(() {
@@ -83,6 +92,63 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         body: Stack(children: [
+          Positioned.fill(
+            child: Image.asset('assets/images/home.png', fit: BoxFit.cover),
+          ),
+
+          Positioned(
+            bottom: 40,
+            left: 800,
+            right: 0,
+            child: Image.asset(
+              'assets/images/red.png', // ヒノアラシ画像
+              width: 180,
+              height: 180,
+            ),
+          ),
+
+          Positioned(
+            bottom: 40,
+            left: 450,
+            right: 0,
+            child: Image.asset(
+              'assets/images/blue.png', // ヒノアラシ画像
+              width: 180,
+              height: 180,
+            ),
+          ),
+
+          Positioned(
+            bottom: 40,
+            left: 0,
+            right: 450,
+            child: Image.asset(
+              'assets/images/green.png', // ヒノアラシ画像
+              width: 180,
+              height: 180,
+            ),
+          ),
+
+          Positioned(
+            bottom: 40,
+            left: 0,
+            right: 800,
+            child: Image.asset(
+              'assets/images/purple.png', // ヒノアラシ画像
+              width: 180,
+              height: 180,
+            ),
+          ),
+
+          Positioned(
+            left: 10,
+            bottom: 360,
+            child: Image.asset(
+              'assets/images/rogo.png',
+              width: 330,
+              height: 330,
+            ),
+          ),
           /* 右上ボタン列 */
           Positioned(
             top: 16,
@@ -116,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                    context.go('/choose', extra: _mode);
                 });
             },
-                child: Image.asset('assets/images/start.png', width: 300),
+                child: Image.asset('assets/images/start.png', width: 250),
               ),
               const SizedBox(height: 40),
               Row(mainAxisSize: MainAxisSize.min, children: [
