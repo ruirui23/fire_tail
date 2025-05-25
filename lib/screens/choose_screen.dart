@@ -55,12 +55,12 @@ class _ChooseScreenState extends State<ChooseScreen> {
       'コンコン（ドアを叩く音）',
       '主「博士〜ヒノアラシを貰いに来たんだけどいる？」',
       'ドタドタ（階段をおりる音）',
-      '博士 「おぉ、よく来たのぉ、よく来たのぉ。今日で20歳か、あんなに小さかったのに、時間の流れは早いものじゃな」',
+      '博士 「おぉ、よく来たのぉ、よく来たのぉ。今日で10歳か、あんなに小さかったのに、時間の流れは早いものじゃな」',
       '主「もぉ！いつの話してるの博士」',
       '主「そういう博士は全然変わってないね」',
       '私の住む『ヒノアラシ村』は成人すると自分に合うヒノアラシを連れてジムリーダーを倒す旅に出ないといけないらしい',
       '今年から始まったことらしくこの試練を乗り越えると成人として正式に認められる',
-      '博士 「優しいのぉ、これでも今年で95歳なんじゃよ」',
+      '博士 「優しいのぉ、これでも今年で70歳なんじゃよ」',
       '博士 「よしそろそろヒノアラシをあげようかのお」',
     ],GameMode.hard: [
       'コンコン（ドアを叩く音）',
@@ -104,8 +104,7 @@ class _ChooseScreenState extends State<ChooseScreen> {
     /* ① 名前入力シーン */
     if (_step == -1) {
       return Scaffold(
-        body: 
-        Center(
+        body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
