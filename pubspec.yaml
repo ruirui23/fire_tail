@@ -31,7 +31,7 @@ dependencies:
   flame: ^1.28.1
   flutter:
     sdk: flutter
-   
+  audioplayers: ^6.4.0 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -64,6 +64,7 @@ flutter:
     - assets/audio/kan_ge_gakefuti01.mp3 # フォルダごと登録
     - assets/audio/startbutton.mp3 # フォルダごと登録
     - assets/audio/messagechange.mp3 # フォルダごと登録
+    - assets/audio/ki.mp3
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
