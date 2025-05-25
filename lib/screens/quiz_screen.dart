@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flame_audio/flame_audio.dart';
 
 import '../models/result.dart';
 import '../models/game_mode.dart';
@@ -47,21 +48,31 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
+  void _nextIntro() {
+  setState(() {
+    _introIdx++;
+    if (_introIdx == _introLines.length - 2) {
+      FlameAudio.bgm.initialize();
+      FlameAudio.bgm.play('quizbattle.mp3', volume: 0.4);
+    }
+
+    if (_introIdx >= _introLines.length) {
+     _showIntro = false;
+    }
+  });
+}
+
   void _answer(int choice) {
+    FlameAudio.play('quiz_answer.ogg', volume: 0.2);
     if (choice == _qs[_idx].$3) _correct++;
-    if (++_idx >= _qs.length) {
+    _idx++;
+    if (_idx >= _qs.length) {
+      FlameAudio.bgm.stop();
       context.read<Result>().setQuizCorrect(_correct);
       context.go('/ending', extra: widget.mode);
     } else {
       setState(() {});
     }
-  }
-
-  void _nextIntro() {
-    setState(() {
-      _introIdx++;
-      if (_introIdx >= _introLines.length) _showIntro = false;
-    });
   }
 
   @override
