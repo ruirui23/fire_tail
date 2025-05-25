@@ -222,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               GestureDetector(
                 onTap: () {
-                  FlameAudio.play('startbutton.mp3');
+                  FlameAudio.play('assets/startbutton.mp3');
                   Future.delayed(const Duration(milliseconds: 100), () {
                     context.go('/choose', extra: _mode);
                   });
