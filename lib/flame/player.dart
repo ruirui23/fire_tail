@@ -13,8 +13,8 @@ class Player extends SpriteComponent
   final String assetPath;
 
   // ── 物理定数 ──────────────────────────────────────────
-  static const g = 3000.0;       // 重力加速度
-  static const jumpV = -1600.0;   // ジャンプ初速
+  static const g = 2960.0;       // 重力加速度 数字を小さくするとよりゆっくり落ち、大きくすると早く落ちる
+  static const jumpV = -1550.0;   // ジャンプ初速　マイナスの絶対値を大きくすると高く飛び、逆に小さくすると低く飛ぶ
 
   double vy = 0;                 // 現在の鉛直速度
   late double ground;            // 地面 y 座標

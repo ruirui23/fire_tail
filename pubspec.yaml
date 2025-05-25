@@ -60,11 +60,8 @@ flutter:
    uses-material-design: true
    assets: 
     - assets/images/
-    - assets/audio/Anime_Motion08-2(Mid).mp3 # フォルダごと登録
-    - assets/audio/kan_ge_gakefuti01.mp3 # フォルダごと登録
-    - assets/audio/startbutton.mp3 # フォルダごと登録
-    - assets/audio/messagechange.mp3 # フォルダごと登録
-    - assets/audio/ki.mp3
+    - assets/audio/
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
