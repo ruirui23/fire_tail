@@ -322,35 +322,35 @@ const gameInfo = '''
 /* ───────── キャラクタープロフィール ───────── */
 class Character {
   final String name;
+  final String assetPath;
   final List<String> lines;
-  const Character(this.name, this.lines);
+  const Character(this.name, this.assetPath, this.lines);
 }
 
 const characters = [
-  Character('主人公', [
+  Character('主人公', 'assets/characters/protagonist.png', [
     'ヒノアラシ村に住む新成人',
     '年齢: 10',
     '性格: 明るく活発、人懐っこい',
     '容姿: ポニーテールに紫の髪',
     '旅から帰り研究所に行ったあとの消息不明',
   ]),
-  Character('博士', [
+  Character('博士', 'assets/characters/hakase.png', [
     'ヒノアラシ研究所の博士',
     '年齢: ？？？',
     '性格: 自由人・利己的',
     '容姿: 白衣と白髪、70歳から老けていない',
     '研究熱心でヒノアラシの研究を中心に行っている。噂によると死を恐れており、不老不死の薬を作っているとか'
-
   ]),
-  Character('アニス', [
+  
+  Character('アニス', 'assets/characters/anise.png', [
     '博士の助手',
     '年齢: ？？？',
     '性格: 裏表が激しい',
     '容姿: 長髪を後ろで束ねた清楚系',
-     '博士の研究に興味があり研究を手伝っていた。主人公が帰ってきてからは博士の助手として働いている。'
-
+    '博士の研究に興味があり研究を手伝っていた。主人公が帰ってきてからは博士の助手として働いている。'
   ]),
-  Character('ジムリーダー', [
+  Character('ジムリーダー', 'assets/characters/gym_leader.png', [
     '火山系ジムリーダー',
     '博士と親交があるらしい',
   ]),
