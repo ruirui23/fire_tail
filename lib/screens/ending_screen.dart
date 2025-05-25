@@ -100,9 +100,7 @@ void _next() {
       if (line.contains('目が覚めたかい？')) {
         _bgType = 7; 
       }
-    if (line.contains('目が覚めたかい？')) {
-        _bgType = 7; 
-      }
+
     }
 
   });
