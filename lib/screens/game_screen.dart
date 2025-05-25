@@ -7,11 +7,11 @@ import 'package:flame_audio/flame_audio.dart';
 import '../flame/adventure_game.dart';
 import '../models/result.dart';
 import '../models/game_mode.dart';
+
 class GameScreen extends StatefulWidget {
   final int chosenId; // 0,1,2
   final GameMode mode;
-  const GameScreen(
-      {Key? key, required this.chosenId, required this.mode})
+  const GameScreen({Key? key, required this.chosenId, required this.mode})
       : super(key: key);
 
   @override
@@ -61,12 +61,11 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  
- String _assetForId(int id) {
+  String _assetForId(int id) {
     if (id == 2) {
-      return widget.mode == GameMode.hard      // ← ハード？
-          ? 'assets/images/purple.png'         
-          : 'assets/images/green.png';        
+      return widget.mode == GameMode.hard // ← ハード？
+          ? 'assets/images/purple.png'
+          : 'assets/images/green.png';
     }
     // 通常 3 色は今まで通り
     switch (id) {
@@ -81,21 +80,24 @@ class _GameScreenState extends State<GameScreen> {
 
   void _next() {
     setState(() {
-     // 「ガラガラ」セリフなら落石音だけ鳴らし、通常はセリフ切り替え音
-    if (_idx + 1 < _dialogue.length && _dialogue[_idx + 1].contains("ガラガラ")) {
-      // 次のセリフが「ガラガラ」なら落石音のみ
-      _idx++;
-      FlameAudio.play('kan_ge_gakefuti01.mp3');
-    } else {
-      // 通常はセリフ切り替え音
-      FlameAudio.play('messagechange.mp3', volume: 0.2);
-      _idx++;
-    }
-    if (_idx >= _dialogue.length) {
-      _game.resumeEngine();
-    }
-  });
-}
+      // 「ガラガラ」セリフなら落石音だけ鳴らし、通常はセリフ切り替え音
+      if (_idx + 1 < _dialogue.length && _dialogue[_idx + 1].contains("ガラガラ")) {
+        // 次のセリフが「ガラガラ」なら落石音のみ
+        _idx++;
+        FlameAudio.play('kan_ge_gakefuti01.mp3');
+      } else {
+        // 通常はセリフ切り替え音
+        FlameAudio.play('messagechange.mp3', volume: 0.2);
+        _idx++;
+      }
+      if (_idx >= _dialogue.length) {
+        _game.resumeEngine();
+      }
+      if (_idx == _dialogue.length) {
+        BgmPlayer.play();
+      }
+    });
+  }
 
   void _nextRes() {
     setState(() {
@@ -156,6 +158,12 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    BgmPlayer.stop();
+    super.dispose();
+  }
+
   Widget _box(String t) => Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -202,17 +210,16 @@ const _opening = <GameMode, Map<int, List<String>>>{
     1: [
       '主「え〜と、地図通りだとジムリーダーはこの先か…（チラッ）」',
       '主「このヒノアラシすごい静かだな炎青いし全然懐いてない気がする」',
-      '"ガラガラ"', 
+      '"ガラガラ"',
       '主（なんだ？！すごい音がしたような…）',
       '主（ッ落石か…避けないと大変なことになる）',
     ],
     2: [
       '主「え〜と、地図通りだとジムリーダーはこの先か…（チラッ）」',
       '主「このヒノアラシちょっと怖いな…懐いてるけど色が紫なんて…この炎の色って普通なのか？」（Cの場合）',
-      '"ガラガラ"', 
+      '"ガラガラ"',
       '主（なんだ？！すごい音がしたような…）',
       '主（ッ落石か…避けないと大変なことになる）',
-
     ],
   },
 };
@@ -247,3 +254,17 @@ const _result = <GameMode, Map<String, List<String>>>{
     ],
   },
 };
+
+class BgmPlayer {
+  static final AudioPlayer _player = AudioPlayer();
+
+  static Future<void> play() async {
+    await _player.setReleaseMode(ReleaseMode.loop); // ループ再生
+    await _player.setVolume(0.3);
+    await _player.play(AssetSource('audio/syo.mp3'));
+  }
+
+  static Future<void> stop() async {
+    await _player.stop();
+  }
+}
