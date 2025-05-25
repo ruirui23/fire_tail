@@ -6,6 +6,7 @@ import '../models/hinoarashi.dart';
 import '../models/game_mode.dart';
 import '../models/result.dart';
 import '../utils/hino_asset.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class ChooseScreen extends StatefulWidget {
   final GameMode mode;
@@ -51,18 +52,20 @@ class _ChooseScreenState extends State<ChooseScreen> {
   ];
 
   /* ───── モード別セリフ ───── */
-  final Map<GameMode, List<String>> _openingLines = {  GameMode.normal: [
+  final Map<GameMode, List<String>> _openingLines = {
+    GameMode.normal: [
       'コンコン（ドアを叩く音）',
       '主「博士〜ヒノアラシを貰いに来たんだけどいる？」',
       'ドタドタ（階段をおりる音）',
-      '博士 「おぉ、よく来たのぉ、よく来たのぉ。今日で20歳か、あんなに小さかったのに、時間の流れは早いものじゃな」',
+      '博士 「おぉ、よく来たのぉ、よく来たのぉ。今日で10歳か、あんなに小さかったのに、時間の流れは早いものじゃな」',
       '主「もぉ！いつの話してるの博士」',
       '主「そういう博士は全然変わってないね」',
       '私の住む『ヒノアラシ村』は成人すると自分に合うヒノアラシを連れてジムリーダーを倒す旅に出ないといけないらしい',
       '今年から始まったことらしくこの試練を乗り越えると成人として正式に認められる',
-      '博士 「優しいのぉ、これでも今年で95歳なんじゃよ」',
+      '博士 「優しいのぉ、これでも今年で70歳なんじゃよ」',
       '博士 「よしそろそろヒノアラシをあげようかのお」',
-    ],GameMode.hard: [
+    ],
+    GameMode.hard: [
       'コンコン（ドアを叩く音）',
       '主「こんにちは〜ヒノアラシを選びに来たんですけど博士はいますか？」',
       '助手「こんにちは、お名前をお伺いしても宜しいですか？」',
@@ -72,9 +75,11 @@ class _ChooseScreenState extends State<ChooseScreen> {
       '私の住む村は『ヒノアラシ村』と言って成人すると自分に合うヒノアラシを連れて旅に出るという少し変わった村だ',
       '（ジムリーダーを倒さないと村に帰れないなんて…最悪だ正直全然乗り気じゃない早く終わらせよう）',
       '2階に到着',
-    ],};
+    ],
+  };
 
-  final Map<GameMode, List<String>> _finalLines = {  GameMode.normal: [
+  final Map<GameMode, List<String>> _finalLines = {
+    GameMode.normal: [
       '博士「この子が君の相棒じゃ！」',
       '主「ありがとう、すごく可愛い！」',
       '博士「うむ！この子と一緒に頑張るんじゃぞ、私が死ぬまでには帰ってきておくれ」',
@@ -86,7 +91,8 @@ class _ChooseScreenState extends State<ChooseScreen> {
       '主「ありがとうございます！じゃ早速行ってきます！」',
       '博士「うむ！気をつけるんじゃぞ。帰ったらアニスがおるからその子に話しかけておくれ」',
       '主（アニス？あーあの助手の人、そういえばそんな名前だったっけ）',
-    ], };
+    ],
+  };
 
   /* ───── ユーティリティ ───── */
   void _next() => setState(() => _step++);
@@ -99,13 +105,13 @@ class _ChooseScreenState extends State<ChooseScreen> {
   String _rp(String s) => s.replaceAll('主', _playerName);
 
   /* ───── 画面構築 ───── */
+
   @override
   Widget build(BuildContext context) {
     /* ① 名前入力シーン */
     if (_step == -1) {
       return Scaffold(
-        body: 
-        Center(
+        body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -125,6 +131,7 @@ class _ChooseScreenState extends State<ChooseScreen> {
                       ? '主'
                       : _nameCtrl.text.trim();
                   context.read<Result>().setPlayerName(_playerName);
+                  BgmPlayer.play();
                   _next();
                 },
                 child: const Text('決定'),
@@ -176,21 +183,20 @@ class _ChooseScreenState extends State<ChooseScreen> {
         if (_step.isEven) {
           // 質問表示
           final q = _questions[qIdx];
-        content = Column(
-  mainAxisSize: MainAxisSize.min,
-  children: [
-    _dialogueBox(_rp(q['text'] as String)),
-    const SizedBox(height: 16),
-    ...List.generate(
-      (q['options'] as List<String>).length,
-      (i) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: ElevatedButton(
-          onPressed: () => _answer(i),
-          child: Text((q['options'] as List<String>)[i]),
-                  ),
-                )
-    )
+          content = Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _dialogueBox(_rp(q['text'] as String)),
+              const SizedBox(height: 16),
+              ...List.generate(
+                  (q['options'] as List<String>).length,
+                  (i) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: ElevatedButton(
+                          onPressed: () => _answer(i),
+                          child: Text((q['options'] as List<String>)[i]),
+                        ),
+                      ))
             ],
           );
         } else {
@@ -203,8 +209,8 @@ class _ChooseScreenState extends State<ChooseScreen> {
 
       // 相棒連れてくる → ドン！
       else if (_step == _questions.length * 2 + 2) {
-        content = _dialogueBox('博士「うむ！では君の旅の相棒を連れてくるから少し待っていておくれ」',
-            onTap: _next);
+        content =
+            _dialogueBox('博士「うむ！では君の旅の相棒を連れてくるから少し待っていておくれ」', onTap: _next);
       } else if (_step == _questions.length * 2 + 3) {
         content = _dialogueBox('…ドン！！', onTap: _next);
       }
@@ -224,13 +230,13 @@ class _ChooseScreenState extends State<ChooseScreen> {
                 setState(() {
                   _revealIdx++;
                   if (_revealIdx >= _finalLines[widget.mode]!.length) {
+                    BgmPlayer.stop();
                     context.go('/game',
                         extra: {'mode': widget.mode, 'id': chosenId});
                   }
                 });
               },
-              child: _oneLineScene(
-                  _rp(_finalLines[widget.mode]![_revealIdx]),
+              child: _oneLineScene(_rp(_finalLines[widget.mode]![_revealIdx]),
                   noScaffold: true),
             ),
             if (_revealIdx == 0) ...[
@@ -254,7 +260,8 @@ class _ChooseScreenState extends State<ChooseScreen> {
         Positioned.fill(
           child: Image.asset('assets/images/lab.png', fit: BoxFit.cover),
         ),
-        Center(child: Padding(padding: const EdgeInsets.all(24), child: content)),
+        Center(
+            child: Padding(padding: const EdgeInsets.all(24), child: content)),
       ]),
     );
   }
@@ -279,7 +286,22 @@ class _ChooseScreenState extends State<ChooseScreen> {
             borderRadius: BorderRadius.circular(8),
             boxShadow: const [BoxShadow(blurRadius: 4, color: Colors.black26)],
           ),
-          child: Text(text, style: const TextStyle(fontSize: 18), textAlign: TextAlign.center),
+          child: Text(text,
+              style: const TextStyle(fontSize: 18),
+              textAlign: TextAlign.center),
         ),
       );
+}
+
+class BgmPlayer {
+  static final AudioPlayer _player = AudioPlayer();
+
+  static Future<void> play() async {
+    await _player.setReleaseMode(ReleaseMode.loop); // ループ再生
+    await _player.play(AssetSource('audio/ki.mp3'));
+  }
+
+  static Future<void> stop() async {
+    await _player.stop();
+  }
 }
