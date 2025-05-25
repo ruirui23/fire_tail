@@ -101,7 +101,7 @@ class _GameScreenState extends State<GameScreen> {
 
   void _nextRes() {
     setState(() {
-      FlameAudio.play('messaagechange.mp3', volume: 0.2);
+      FlameAudio.play('messagechange.mp3', volume: 0.2);
       _resIdx++;
       if (_resIdx >= _resultDialogue.length) {
         context.go('/quiz', extra: widget.mode);
