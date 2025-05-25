@@ -144,30 +144,30 @@ class _HomeScreenState extends State<HomeScreen> {
             right: 0,
             child: Image.asset(
               'assets/images/red.png', // ヒノアラシ画像
-              width: 180,
-              height: 180,
+              width: 200,
+              height: 200,
             ),
           ),
 
           Positioned(
             bottom: 40,
-            left: 450,
+            left: 420,
             right: 0,
             child: Image.asset(
               'assets/images/blue.png', // ヒノアラシ画像
-              width: 180,
-              height: 180,
+              width: 200,
+              height: 200,
             ),
           ),
 
           Positioned(
             bottom: 40,
             left: 0,
-            right: 450,
+            right: 420,
             child: Image.asset(
               'assets/images/green.png', // ヒノアラシ画像
-              width: 180,
-              height: 180,
+              width: 200,
+              height: 200,
             ),
           ),
 
@@ -177,8 +177,8 @@ class _HomeScreenState extends State<HomeScreen> {
             right: 800,
             child: Image.asset(
               'assets/images/purple.png', // ヒノアラシ画像
-              width: 180,
-              height: 180,
+              width: 200,
+              height: 200,
             ),
           ),
 
