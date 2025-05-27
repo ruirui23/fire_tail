@@ -330,14 +330,14 @@ class Character {
 }
 
 const characters = [
-  Character('主人公', 'assets/characters/protagonist.png', [
+  Character('主人公', 'assets/images/syuzinkou.png', [
     'ヒノアラシ村に住む新成人',
     '年齢: 10',
     '性格: 明るく活発、人懐っこい',
     '容姿: ポニーテールに紫の髪',
     '旅から帰り研究所に行ったあとの消息不明',
   ]),
-  Character('博士', 'assets/characters/hakase.png', [
+  Character('博士', 'assets/images/doctor.png', [
     'ヒノアラシ研究所の博士',
     '年齢: ？？？',
     '性格: 自由人・利己的',
@@ -345,14 +345,14 @@ const characters = [
     '研究熱心でヒノアラシの研究を中心に行っている。噂によると死を恐れており、不老不死の薬を作っているとか'
   ]),
   
-  Character('アニス', 'assets/characters/anise.png', [
+  Character('アニス', 'assets/images/zyosyu.png', [
     '博士の助手',
     '年齢: ？？？',
     '性格: 裏表が激しい',
     '容姿: 長髪を後ろで束ねた清楚系',
     '博士の研究に興味があり研究を手伝っていた。主人公が帰ってきてからは博士の助手として働いている。'
   ]),
-  Character('ジムリーダー', 'assets/characters/gym_leader.png', [
+  Character('ジムリーダー', 'assets/images/zimu.png', [
     '火山系ジムリーダー',
     '博士と親交があるらしい',
   ]),
