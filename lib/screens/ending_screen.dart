@@ -27,7 +27,7 @@ class _EndingScreenState extends State<EndingScreen> {
 
     /* ───── エンディング種別判定 ───── */
     String key;
-    if (r.collisions == 0 && r.quizCorrect == 5 && r.chosenId == 2) {
+    if (r.collisions <= 4 && r.quizCorrect == 5 && r.chosenId == 2) {
       key = 'evolution';                           // シークレット
     } else if (r.collisions <= 8 && r.quizCorrect >= 2) {
       key = 'win';                                 // 勝ち
